@@ -15,10 +15,10 @@ Other papers by the authors where -previous incarnations of- the **NEOPRENE** li
 
 | Directory | Contents |
 | :-------- | :------- |
-|  [NSRP](NSRP) | Python code to calibrate the NSRPM (Neyman-Scott Rectangular Pulse Model) and simulate synthetic rainfall series.
-|  [STNSRP](STNSRP) | Python code for calibrate the STNSRPM (Spatio-Temporal Neyman-Scott Rectangular Pulse Model) and simulate multisite rainfall series (in progress).
-| [doc](doc) | Description of the model.
-| [notebooks](notebooks) |  Jupyter notebooks with examples on how to calibrate, simulate and validate a Neyman-Scott model using the library. Examples on how to perform a daily-to-hourly rainfall disaggregation using the synthetic series is also included.
+|  [NSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/NSRP) | Python code to calibrate the NSRPM (Neyman-Scott Rectangular Pulse Model) and simulate synthetic rainfall series.
+|  [STNSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/STNSRP) | Python code for calibrate the STNSRPM (Spatio-Temporal Neyman-Scott Rectangular Pulse Model) and simulate multisite rainfall series (in progress).
+| [doc](https://github.com/IHCantabria/NEOPRENE/tree/main/doc) | Description of the model.
+| [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) |  Jupyter notebooks with examples on how to calibrate, simulate and validate a Neyman-Scott model using the library. Examples on how to perform a daily-to-hourly rainfall disaggregation using the synthetic series is also included.
 
 ## Requirements
 
@@ -32,11 +32,11 @@ pip install NEOPRENE
 
 ## Examples of use
 
-Examples of use of the `NEOPRENE` library are available in the form of [jupyter notebooks](notebooks). To run the examples follow the following steps:
+Examples of use of the `NEOPRENE` library are available in the form of [jupyter notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks). To run the examples follow the following steps:
 
-1. Download the folder [notebooks](notebooks) from the github repository, or navigate to the folder should you have cloned the repo.
+1. Download the folder [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) from the github repository, or navigate to the folder should you have cloned the repo.
 2. Open jupyter notebook of Jupyter Lab (type `jupyter notebook` or `jupyter lab`  in the terminal)
-3. Open one of the tests available in the [notebooks](notebooks) folder with jupyter notebook  (e.g. [NSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/NSRP_test.ipynb))
+3. Open one of the tests available in the [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) folder with jupyter notebook  (e.g. [NSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/NSRP_test.ipynb))
 
 ## Errata and problem reporting
 
