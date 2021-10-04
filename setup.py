@@ -14,7 +14,7 @@ setup(  name='NEOPRENE',
         author_email='javier.diez@unican.es, salvador.navas@unican.es, manuel.deljesus@unican.es',
         maintainer       = 'Manuel del Jesus',
         maintainer_email = 'manuel.deljesus@unican.es',
-        url = 'https://github.com/IHCantabria/NEOPRENE/tree/Crear-ejecutable',
+        url = 'https://github.com/IHCantabria/NEOPRENE',
 
         include_package_data = True,
         python_requires='>=3.7, <4',
