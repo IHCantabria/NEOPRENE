@@ -1,12 +1,15 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+#long_description = (this_directory / "README.md").read_text()
+with open(this_directory+"README.md", encoding="utf-8") as f:
+    long_description = f.read()
+
 
 setup(  name='NEOPRENE',
         packages = find_packages(),
         license = "Apache 2.0",
-        version='0.0.11',
+        version='0.0.12',
         description='🌎 Scripts and information to synthetic generation of precipitation based on Point Processes.',
         long_description=long_description,
         long_description_content_type='text/markdown',
