@@ -1,0 +1,9 @@
+*.pyc
+NSRP/NSRP.egg-info*
+*ipynb_checkpoints*
+*DS_Store*
+*__pycache__*
+dist/*
+*egg-info*
+notebooks/CAL*
+notebooks/SIM*
