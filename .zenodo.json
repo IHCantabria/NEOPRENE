@@ -1,0 +1,36 @@
+{
+    "creators": [
+        {
+            "name" : "Díez-Sierra, Javier",
+            "affiliation": "Santander Meteorology Group, Dept. Applied Mathematics and Computer Science, Universidad de Cantabria, Santander, Spain",
+            "orcid": "0000-0001-9053-2542"
+        },
+        {
+            "name": "Navas, Salvador",
+            "affiliation": "Environmental Hydraulics Institute \"IHCantabria\". Universidad de Cantabria. Santander, Spain.",
+            "orcid": "0000-0001-7439-1743"
+        },
+        {
+            "name": "del Jesus, Manuel",
+            "affiliation": "Environmental Hydraulics Institute \"IHCantabria\". Universidad de Cantabria. Santander, Spain.",
+            "orcid": "0000-0003-0703-8960"
+        }
+    ],
+    "license": "Apache-2.0",
+    "title": "NEOPRENE: Neyman-Scott Process Rainfall Emulator",
+    "upload_type": "software",
+    "description": "NEOPRENE library to emulate and synthetically produce time series of rainfall.",
+    "keywords": ["Rainfall emulator", "Neyman-Scott"],
+    "related_identifiers": [
+        {
+            "scheme": "url", 
+            "identifier": "https://github.com/IHCantabria/NEOPRENE/tree/v0.0.13", 
+            "relation": "isSupplementTo"
+        }, 
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.5549810", 
+            "relation": "isVersionOf"
+        }
+    ]
+}
