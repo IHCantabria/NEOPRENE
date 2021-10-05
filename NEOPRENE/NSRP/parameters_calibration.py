@@ -19,8 +19,8 @@ class parameters_calibration(object):
         self.Error_dataframe    = Error_dataframe
 
     def save_files(self, path_output_files): 
-        self.Fitted_parameters.to_csv(path_output_files+'./Calibrated_parameters.csv')
-        self.statististics_Real.to_csv(path_output_files+'./statististics_real.csv')
-        self.statististics_Fit.to_csv(path_output_files+'./statististics_fit.csv')
+        self.Fitted_parameters.to_csv(path_output_files+'Calibrated_parameters.csv')
+        self.statististics_Real.to_csv(path_output_files+'statististics_real.csv')
+        self.statististics_Fit.to_csv(path_output_files+'statististics_fit.csv')
             
         
