@@ -32,6 +32,9 @@ Currently, the library can only represent rainfall at a given point. The basic m
 + **Data:** Pandas ```DataFrame``` that contains the original time series that is to be emulated using **NEOPRENE**.
 
 + **Seasonality:** Python ```list``` that configures the desired seasonality for the model. Calibration can be done in a monthly basis, by season or by year.
+
+In the calibration hyperparameters file the seasonality type is defined within the ```Seasonality_type``` field. This can be **annual, seasonal, montly or user_defined**. If the seasonality is ```user_defined``` it is necessary to enter in the ```Seasonality_user``` field the seasonality of the user's choice.
+
   + _Anual calibraton_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
 
     ```python
@@ -65,6 +68,16 @@ Currently, the library can only represent rainfall at a given point. The basic m
     Seasonality.append((10))
     Seasonality.append((11))
     Seasonality.append((12))
+    ```
+    
+    +_Seasonality_user_: The user can define a seasonality different from the previous groups.
+    
+    ```python
+    Seasonality=list()
+    Seasonality.append((1,2,3))
+    Seasonality.append((4,5,6))
+    Seasonality.append((7,8,9))
+    Seasonality.append((10,11,12))
     ```
 
 + **temporal_resolution:** ```string``` specifying the temporal resolution of the time series provided to the calibration process.
