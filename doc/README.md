@@ -31,9 +31,7 @@ Currently, the library can only represent rainfall at a given point. The basic m
 
 + **Data:** Pandas ```DataFrame``` that contains the original time series that is to be emulated using **NEOPRENE**.
 
-+ **Seasonality:** Python ```list``` that configures the desired seasonality for the model. Calibration can be done in a monthly basis, by season or by year.
-
-In the calibration hyperparameters file the seasonality type is defined within the ```Seasonality_type``` field. This can be **annual, seasonal, montly or user_defined**. If the seasonality is ```user_defined``` it is necessary to enter in the ```Seasonality_user``` field the seasonality of the user's choice.
++ **Seasonality_type:** Python ```list``` that configures the desired seasonality for the model. Calibration can be done in a monthly basis, by season or by year. In the calibration hyperparameters file the seasonality type is defined within the ```Seasonality_type``` field. This can be **annual, seasonal, montly or user_defined**. If the seasonality is ```user_defined``` it is necessary to enter in the ```Seasonality_user``` field the seasonality of the user's choice.
 
   + _Anual calibraton_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
 
@@ -94,13 +92,7 @@ In the calibration hyperparameters file the seasonality type is defined within t
   process = 'storms' # Convective and Frontal storm are considered
   ```
 
-+ **Intensity_function:** ```string``` that configures the distribution used for the rainfall intensity. Currently, only exponential distributions are considered.
-
-  ```python  
-  Intensity_function = 'E'
-  ```
-
-+ **statistics:** ```list``` of ```strings``` that contain the statistics that have to be considered during the fitting process. The statistics included are:
++ **statistics_name:** ```list``` of ```strings``` that contain the statistics that have to be considered during the fitting process. The statistics included are:
 
    ```python
    statistics = ['mean', # Rainfall average
@@ -132,12 +124,6 @@ In the calibration hyperparameters file the seasonality type is defined within t
   number_bees = 10000
   ```
   
-+ **number_initializations:**```integer``` defining the number of initializations to be performed during the calibration procedure.
-
-   ```python
-  number_initializations = 1
-  ```
-
 + **time_between_storms:** ```list``` defining the range of inter-storm arrival times. The inter-storm arrival time is the inverse of the &lambda; parameter.
 
   ```python
@@ -168,23 +154,91 @@ In the calibration hyperparameters file the seasonality type is defined within t
   storm_cell_displacement = [1.01, 50] # hours
   ```
 
-## Simulation hyperparameters
++ **number_initializations:**```integer``` defining the number of initializations to be performed during the calibration procedure.
 
-+ **year_ini and year_fin:** Initial and final year of the simulated time series
-
-```python
-year_ini = 2000
-year_fin = 2100
-```
-
-+ **parameters_simulation**: ```list``` containing the values of the simulated parameters
-
-  ```python
-  parameters_simulation = [lanbda, upsilon, beta, chi, epsilon]
+   ```python
+  number_initializations = 1
   ```
 
-+ **statistics_external**: ```list``` providing the statistics to be reproduced by the generated time series
+## Simulation hyperparameters
+
++ **Seasonality_type:** Python ```list``` that configures the desired seasonality for the model. Calibration can be done in a monthly basis, by season or by year. In the calibration hyperparameters file the seasonality type is defined within the ```Seasonality_type``` field. This can be **annual, seasonal, montly or user_defined**. If the seasonality is ```user_defined``` it is necessary to enter in the ```Seasonality_user``` field the seasonality of the user's choice.
+
+  + _Anual calibraton_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
+
+    ```python
+    Seasonality=list()
+    Seasonality.append((1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11, 12))
+    ```
+
+  + _Seasonal calibraton_: The library merges the different months into the prescribed groups, fitting a different set of parameters per group.
+  
+    ```python
+    Seasonality=list()
+    Seasonality.append((1, 2, 3))
+    Seasonality.append((4, 5, 6))
+    Seasonality.append((7, 8, 9))
+    Seasonality.append((10, 11, 12))
+    ```
+
+  + _Monthly calibration_: The library fits a different set of parameters for each month of the time series.
+  
+    ```python
+    Seasonality=list()
+    Seasonality.append((1))
+    Seasonality.append((2))
+    Seasonality.append((3))
+    Seasonality.append((4))
+    Seasonality.append((5))
+    Seasonality.append((6))
+    Seasonality.append((7))
+    Seasonality.append((8))
+    Seasonality.append((9))
+    Seasonality.append((10))
+    Seasonality.append((11))
+    Seasonality.append((12))
+    ```
+    
+    +_Seasonality_user_: The user can define a seasonality different from the previous groups.
+    
+    ```python
+    Seasonality=list()
+    Seasonality.append((1,2,3))
+    Seasonality.append((4,5,6))
+    Seasonality.append((7,8,9))
+    Seasonality.append((10,11,12))
+    ```
++ **statistics_name:** ```list``` of ```strings``` that contain the statistics that have to be considered during the fitting process. The statistics included are:
+
+   ```python
+   statistics = ['mean', # Rainfall average
+                'var_h', # Variance
+                'autocorr_l_h', # Autocorrelation
+                'fih_h', # Probability of no rainfall
+                'fiWW_h', # Transition probability from rainy period to rainy period
+                'fiDD_h', # Transition probability from dry period to dry period
+                'M3_h'] # Skewness
+   ```
+
+   Statistics may refer to different lags (```l```) and aggregation levels (```h```), where the aggregation levels indicate the number of temporal resolutions over which the value is aggregated.
+   
+
++ **temporal_resolution:** ```string``` specifying the temporal resolution of the time series provided to the calibration process.
+
+   ```python
+   temporal_resolution = 'h' # Hourly resolution
+   temporal_resolution = 'd' # Daily resolution
+   ```
++ **process**: ```string``` configuring the model type.
 
   ```python
-  statistics_external = ['mean', 'var_1', 'var_2', 'var_3', 'var_4', 'autocorr_1_1', 'autocorr_2_1', 'autocorr_3_1','fih_1', 'fiWW_1', 'fiDD_1', 'M3_1']
-    ```
+  process = 'normal' # Only one type of storm is considered
+  process = 'storms' # Convective and Frontal storm are considered
+  ```
+  
++ **year_ini and year_fin:** Initial and final year of the simulated time series
+
+   ```python
+   year_ini = 2000
+   year_fin = 2100
+   ```
