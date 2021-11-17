@@ -15,6 +15,7 @@ import time
 import yaml
 import ast
 from STNSRP.parameters_calibration import parameters_calibration
+import sys
 
 class Calibration(object):
     """This function allows you to configure the STNSRPM to calibrate from user-defined hyperparameters.
@@ -39,8 +40,8 @@ class Calibration(object):
         
         
     
-        self.statistics_dataframe   = statistics.statistics_dataframe
-        self.crosscorr_dataframe = statistics.crosscorr_dataframe
+        self.statistics_dataframe   = statistics.statistics_dataframe.copy()
+        self.crosscorr_dataframe = statistics.crosscorr_dataframe.copy()
    
         ##Limits are obtained at the indicated time resolution
         if self.hiperparams.temporal_resolution=='d':
@@ -54,7 +55,7 @@ class Calibration(object):
             [(1/self.hiperparams.time_between_storms[1])*t, (1/self.hiperparams.time_between_storms[0])*t],
             [self.hiperparams.number_storm_cells[0], self.hiperparams.number_storm_cells[1]],
             [(1/self.hiperparams.cell_duration[1])*t, (1/self.hiperparams.cell_duration[0])*t],
-            [(1/self.hiperparams.cell_intensity[1])*t, (1/self.hiperparams.cell_intensity[0])*t], 
+            #[(1/self.hiperparams.cell_intensity[1])*t, (1/self.hiperparams.cell_intensity[0])*t], 
             [(1/self.hiperparams.storm_cell_displacement[1])*t, (1/self.hiperparams.storm_cell_displacement[0])*t],
             [(1/self.hiperparams.cell_radius[1]), (1/self.hiperparams.cell_radius[0])],
             [(1/self.hiperparams.storm_radius_p[1]), (1/self.hiperparams.storm_radius_p[0])]])
@@ -64,8 +65,16 @@ class Calibration(object):
         nn_cross = np.sum(['cross' in i for i in self.hiperparams.statistics_name])
         cross_corr_division = 10#
         statistics_dataframe_fit=pd.DataFrame(index = self.hiperparams.statistics_name[0:sta_len-nn_cross])
-        crosscorr_dataframe_fit=self.crosscorr_dataframe.copy()
-
+        #crosscorr_dataframe_fit=self.crosscorr_dataframe
+        # create empty dictionary where overwritte the fitted results
+        crosscorr_dataframe_fit = {}
+        for key in self.crosscorr_dataframe.keys():
+            crosscorr_dataframe_season = {}
+            for key_season in self.crosscorr_dataframe[key].keys():
+                dataframe_aux = pd.DataFrame(index = self.crosscorr_dataframe[key][key_season].index, columns = self.crosscorr_dataframe[key][key_season].columns)
+                dataframe_aux['dist'] = self.crosscorr_dataframe[key][key_season]['dist']
+                crosscorr_dataframe_season[key_season] = dataframe_aux
+            crosscorr_dataframe_fit[key] = crosscorr_dataframe_season
 
         if self.hiperparams.process=='normal':
 

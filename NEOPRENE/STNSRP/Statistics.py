@@ -10,7 +10,7 @@ The statistics are then used to calibrate the model parameters
 '''
 
 import sys
-sys.path.insert(1, '/home/javi/Projects/STNSRPM_new/STNSRPM/')
+#sys.path.insert(1, '/home/javi/Projects/STNSRPM_new/STNSRPM/')
 from STNSRP.libs_STNSRP import *
 import numpy as np
 import pandas as pd
@@ -40,19 +40,19 @@ def statistics_from_serie(statistics_name, Seasonality_str, Seasonality, tempora
              
         if len(Seasonality)==12:
             ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
-            Datos['Estacionalidad']=Datos.loc[:,'Rain']*np.nan
+            Datos['Seasonality']=Datos.loc[:,'Rain']*np.nan
             pos=np.where(Datos.index.month == prii); pos=pos[0]
-            Datos['Estacionalidad'][pos]=Datos['Rain'][pos]
-            Pluvio_GS = Datos['Estacionalidad'][Datos['Estacionalidad']>=0]
+            Datos['Seasonality'].iloc[pos]=Datos['Rain'][pos]
+            Pluvio_GS = Datos['Seasonality'][Datos['Seasonality']>=0]
             Datos=Pluvio_GS
             
         else:
             ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
-            Datos['Estacionalidad'] = Datos.loc[:,'Rain']*np.nan
+            Datos['Seasonality'] = Datos.loc[:,'Rain']*np.nan
             for i, ii in enumerate(prii):
                 pos=np.where(Datos.index.month == ii); pos=pos[0]
-                Datos['Estacionalidad'][pos]=Datos['Rain'][pos]
-            Pluvio_GS = Datos['Estacionalidad'][Datos['Estacionalidad']>=0]
+                Datos['Seasonality'].iloc[pos]=Datos['Rain'][pos]
+            Pluvio_GS = Datos['Seasonality'][Datos['Seasonality']>=0]
             Datos=Pluvio_GS
         
         

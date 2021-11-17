@@ -227,7 +227,7 @@ def STNSRP_fi_min(mu_c, fi_may):
 
     return (mu_c*(fi_may**2))/(2*np.pi)
 
-def NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p,fi_may, d):
+def NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d):
     """Return the cross correlation
     Eq (12)--> Further Developments of the Neyman-Scott Clustered Point Process 
     for Modeling Rainfall  (Cowperwait, 1991)"""

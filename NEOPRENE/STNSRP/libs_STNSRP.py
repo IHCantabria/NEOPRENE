@@ -143,8 +143,6 @@ def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
     Correlacion_distancia=pd.DataFrame()
     Correlacion_distancia['Corr']=np.reshape(Correlacion_espacial.values, np.size(Correlacion_espacial.values))
     Correlacion_distancia['dist']=np.reshape(Distancia.values, np.size(Distancia.values))
-
-    print(Correlacion_distancia)
     
     ##Quito los repetidos (solo me quedo con una parte de la diagonal)
     Correlacion_distancia=pd.DataFrame(np.vstack({tuple(row) for row in Correlacion_distancia.values}), columns=['Corr', 'dist'])
@@ -158,7 +156,7 @@ def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
     #plt.xlabel('distance[km]')
     #plt.title('Spatial Correlation funtion')   
 
-    print(Correlacion_distancia) 
+    #print(Correlacion_distancia) 
     
     ##Divido en 10 tramos y calculo la correlación espacial media en esa distancia
     tramos=np.linspace(0, Correlacion_distancia['dist'].max(), divisions)#divisions=11
@@ -188,20 +186,6 @@ def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
     
     return puntos_medios, correlacion_media
 
-def index_string(param, string):
-    if string in param:
-        param_list=list(param)
-        return param_list.index(string)
-    else:
-        return None
-
-def FIND_INDEX_MONTH(month, Dataframe):
-    for i in Dataframe.columns:
-        if np.size(i)==1:
-            return month
-        if month in i:  
-            return i
-    return None
 
 def XI_MONTHS(Data, Dataframe_parametros, process, Seasonality):
     ##Calculo el parámetro de escala en cada localización
@@ -249,7 +233,7 @@ def XI_MONTHS(Data, Dataframe_parametros, process, Seasonality):
                 if mm in i: Dataframe_xi_meses.loc[mm]=Dataframe_xi.loc[[i]].values[0]
 
     #print(Dataframe_xi_meses)
-#Dataframe_xi_meses=Dataframe_xi_meses.sort()
+    #Dataframe_xi_meses=Dataframe_xi_meses.sort()
     
     return Dataframe_xi_meses
 

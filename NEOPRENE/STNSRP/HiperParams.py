@@ -14,7 +14,7 @@ import yaml
 import ast
 
 class Calibration(object):
-    """This function allows to obtain the hyperparameters to start the calibration of the point model and to check if all parameters are correct.
+    """This function allows to obtain the hyperparameters to start the calibration of the spatio-temporal model and to check if all parameters are correct.
     
     Parameters
     ----------
@@ -37,9 +37,7 @@ class Calibration(object):
         self.time_between_storms     = hiper_params['time_between_storms']
         self.number_storm_cells      = hiper_params['number_storm_cells']
         self.cell_duration           = hiper_params['cell_duration']
-        self.cell_intensity          = hiper_params['cell_intensity']
-        self.storm_cell_displacement = hiper_params['storm_cell_displacement']
-        self.cell_intensity          = hiper_params['cell_intensity']
+        #self.cell_intensity          = hiper_params['cell_intensity']
         self.storm_cell_displacement = hiper_params['storm_cell_displacement']
         self.coordinates             = hiper_params['coordinates']
         self.storm_radius            = hiper_params['storm_radius']
@@ -129,7 +127,7 @@ class Calibration(object):
         
         
 class Simulation(object): 
-    """This function allows to obtain the hyperparameters to start the simulation of the point model and to check if all parameters are correct.
+    """This function allows to obtain the hyperparameters to start the simulation of the spatio-temporal model and to check if all parameters are correct.
         
         Parameters
         ----------
@@ -146,6 +144,8 @@ class Simulation(object):
         self.temporal_resolution     = hiper_params['temporal_resolution']
         self.year_ini                = hiper_params['year_ini']
         self.year_fin                = hiper_params['year_fin']
+        self.coordinates             = hiper_params['coordinates']
+        self.storm_raidus            = hiper_params['storm_radius']
         
         if self.Seasonality_type=='annual':
             Seasonality=list()
