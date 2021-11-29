@@ -8,13 +8,13 @@ Library containing classes for calibrating model parameters.
     
 '''
 
-from STNSRP.MathematicalPropertiesSTNSRP import *
-from STNSRP.utils import *
-from STNSRP.libs_STNSRP import *
+from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
+from NEOPRENE.STNSRP.utils import *
+from NEOPRENE.STNSRP.libs_STNSRP import *
 import time
 import yaml
 import ast
-from STNSRP.parameters_calibration import parameters_calibration
+from NEOPRENE.STNSRP.parameters_calibration import parameters_calibration
 import sys
 
 class Calibration(object):

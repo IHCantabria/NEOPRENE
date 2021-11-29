@@ -11,9 +11,9 @@ Rectangular Pulses (NSRP).
 
 '''Functions of the NSRP mode'''
 
-from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
-from NEOPRENE.STNSRP.utils import *
-import NEOPRENE.STNSRP.PSOMdJ as pso
+from STNSRP.MathematicalPropertiesSTNSRP import *
+from STNSRP.utils import *
+import STNSRP.PSOMdJ as pso
 import numpy as np
 import pandas as pd
 import scipy as sp
