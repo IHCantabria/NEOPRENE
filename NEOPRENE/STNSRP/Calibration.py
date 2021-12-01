@@ -27,8 +27,8 @@ class Calibration(object):
       
     """
     def __init__(self,hiperparams):
-        self.hiperparams = hiperparams
-    def __call__(self, statistics, verbose=False):
+        self.hiperparams  = hiperparams
+    def __call__(self, statistics, time_series, verbose=False):
         """Starting from the general hyperparameters of the model and different real statistics, the calibration of the point model begins.
         
         Parameters
@@ -37,7 +37,7 @@ class Calibration(object):
             Object with statistics.
           
         """
-        
+        #self.Input_Series = Input_Series.copy()
         
     
         self.statistics_dataframe   = statistics.statistics_dataframe.copy()
@@ -127,6 +127,7 @@ class Calibration(object):
         print('Adjustment of parameters using the Particle Swarm Optimization (PSO)')
         print('')
         print('')
+        
         Error_dataframe=pd.DataFrame(index=self.hiperparams.Seasonality_str)
         Error_dataframe['Total Error']=np.nan
 
@@ -251,8 +252,12 @@ class Calibration(object):
                 Dataframe_params[prii]=param_v
 
         #Dataframe_xi_months=XI_MONTHS(Datos_, Dataframe_params, self.hiperparams.process, self.hiperparams.Seasonality)#calculate scale parameter for every gauge
+        
+        Dataframe_xi_months = XI_MONTHS(time_series, Dataframe_params, self.hiperparams.process)
 
-        resuls = parameters_calibration(Dataframe_params,statistics_dataframe_fit, crosscorr_dataframe_fit, self.statistics_dataframe, self.crosscorr_dataframe, Error_dataframe)
+        resuls = parameters_calibration(Dataframe_params,statistics_dataframe_fit, crosscorr_dataframe_fit, self.statistics_dataframe, self.crosscorr_dataframe, Error_dataframe, Dataframe_xi_months)
+        
+        
         
         
         return resuls

@@ -198,56 +198,40 @@ def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
     return puntos_medios, correlacion_media
 
 
-def XI_MONTHS(Data, Dataframe_parametros, process, Seasonality):
-    ##Calculo el parámetro de escala en cada localización
-    Dataframe_xi=pd.DataFrame(index=Seasonality)
-    for j in Data.columns:
+def XI_MONTHS(Data, Dataframe_parametros, process):
+    """Calculate the scale parameter for every gauge and season"""
+    Dataframe_xi=pd.DataFrame(index=Dataframe_parametros.columns)
+    for gauge in Data.columns:
         xis=list()
-        for i in Seasonality: #Siempre ajusto el xi para los 12 meses
-            posi=np.where(np.in1d(Data.index.month, i, assume_unique=True))[0]
-            media_rain=np.nanmean(Data[j][posi])
-            col=FIND_INDEX_MONTH(i, Dataframe_parametros)
-            col=col[0]
+        for season in Dataframe_parametros.columns:
+            posi=np.where(np.in1d(Data.index.month, season, assume_unique=True))[0]
+            mean_rain=np.nanmean(Data[gauge][posi])
             if process=='normal':
-                if index_string(Dataframe_parametros.index, 'alpha')!=None: alpha=Dataframe_parametros[col]['alpha']
+                if index_string(Dataframe_parametros, 'alpha')!=None: alpha=Dataframe_parametros[season]['alpha']
                 else: alpha=1
-                xis.append(scale_funtion(media_rain,Dataframe_parametros[col]['landa'],\
-                                         Dataframe_parametros[col]['ipsilon'], Dataframe_parametros[col]['eta'],alpha, I_F))
-            elif process=='cells':
-                if index_string(Dataframe_parametros.index, 'alpha1')!=None: 
-                    alpha1=Dataframe_parametros[col]['alpha1']; alpha1=Dataframe_parametros[col]['alpha2']; 
-                else: alpha1=1; alpha2=1
-                xi1=(scale_funtion(media_rain,Dataframe_parametros[col]['landa'],\
-                         Dataframe_parametros[col]['ipsilon'], Dataframe_parametros[col]['eta1'],alpha1, I_F))
-                xi2=(scale_funtion(media_rain,Dataframe_parametros[col]['landa'],\
-                         Dataframe_parametros[col]['ipsilon'], Dataframe_parametros[col]['eta2'],alpha2, I_F))
-                xis.append(xi1*media_rain,Dataframe_parametros[col]['alpha_p1']+\
-                           xi2*(1-media_rain,Dataframe_parametros[col]['alpha_p1']))
+                xis.append(scale_funtion(mean_rain,Dataframe_parametros[season]['landa'],\
+                                         Dataframe_parametros[season]['ipsilon'], Dataframe_parametros[season]['eta'],alpha))
             elif process=='storms':
                 if index_string(Dataframe_parametros.index, 'alpha1')!=None: 
-                    alpha1=Dataframe_parametros[col]['alpha1']; alpha1=Dataframe_parametros[col]['alpha2']; 
+                    alpha1=Dataframe_parametros[season]['alpha1']; alpha1=Dataframe_parametros[season]['alpha2']; 
                 else: alpha1=1; alpha2=1
-                xi1=(scale_funtion(media_rain,Dataframe_parametros[col]['landa1'],\
-                         Dataframe_parametros[col]['ipsilon1'], Dataframe_parametros[i]['eta1'],alpha1, I_F))
-                xi2=(scale_funtion(media_rain,Dataframe_parametros[col]['landa1'],\
-                         Dataframe_parametros[col]['ipsilon1'], Dataframe_parametros[i]['eta2'],alpha2, I_F))
+                xi1=(scale_funtion(mean_rain,Dataframe_parametros[season]['landa1'],\
+                         Dataframe_parametros[season]['ipsilon1'], Dataframe_parametros[i]['eta1'],alpha1))
+                xi2=(scale_funtion(mean_rain,Dataframe_parametros[season]['landa1'],\
+                         Dataframe_parametros[season]['ipsilon1'], Dataframe_parametros[i]['eta2'],alpha2))
                 xis.append(xi1+xi2)
 
-        Dataframe_xi[j]=xis
+        Dataframe_xi[gauge]=xis
 
-    ##Ordeno    
+    # Sorting dataframe 
     Dataframe_xi_meses=pd.DataFrame(columns=Dataframe_xi.columns)
     for i in Dataframe_xi.index:
         if np.size(i)==1: Dataframe_xi_meses.loc[i]=Dataframe_xi.loc[[i]].values[0]
         else: 
             for mm in np.arange(1,13): 
                 if mm in i: Dataframe_xi_meses.loc[mm]=Dataframe_xi.loc[[i]].values[0]
-
-    #print(Dataframe_xi_meses)
-    #Dataframe_xi_meses=Dataframe_xi_meses.sort()
     
     return Dataframe_xi_meses
-
 
 
 class evaluateInd_PSO(object):
@@ -694,9 +678,6 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
                 
                 Intensity_cell_sim=np.random.exponential(scale=Intensity_cell[monthss[0]-1], size=Number_cell_per_storm[i])
 
-
-              
-
             for j in range(Number_cell_per_storm[i][0]):
 
                 if temporal_resolution=='d':
@@ -770,7 +751,411 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
            np.hstack(Intensity_cells_total), np.hstack(Time_cells_total)
 
 
-def STNSRP_simulation():
+from shapely.geometry import Point
+from shapely.geometry import Polygon
+#from descartes.patch import PolygonPatch
+def mean_area_intersect_rectangle_circle(x_lim, y_lim, radius, plott):
+    ##Calculo el aréa media que intersecta un rectangulo (fijo) y un circulo cuyo centro se va moviendo a lo largo
+    ## del rectangulo (Sería integrar entre x e y. pero lo hago numericamente)
+    ##x_lim y y_lim serían las esquinas del rectangulo
+    
+    min_x=np.min(x_lim)
+    max_x=np.max(x_lim)
+    min_y=np.min(y_lim)
+    max_y=np.max(y_lim)
+    
+    rectangle= Polygon([(min_x, min_y), (min_x, max_y), (max_x, max_y), (max_x, min_y), (min_x, min_y)])##creo rectangulo
+
+    xx=np.linspace(x_lim[0], x_lim[1], 100)
+    yy=np.linspace(y_lim[0], y_lim[1], 100)
+    [XX, YY]=np.meshgrid(xx, yy)
+    XX_reshape=XX.reshape(np.size(XX), 1)
+    YY_reshape=YY.reshape(np.size(YY), 1)
+    
+    area_medio=list()
+    for i in range(len(XX_reshape)):
+        circle=Point(XX_reshape[i],YY_reshape[i]).buffer(radius)##creo circulo
+        diferencia=rectangle.intersection(circle)##calculo intersección
+        
+        if plott=='True':
+        
+            fig = pyplot.figure(1, figsize=(10, 5), dpi=90)
+            # 1: valid polygon
+            ax = fig.add_subplot(121)
+            patch = PolygonPatch(rectangle, facecolor='b', edgecolor='b', alpha=0.5, zorder=2)
+            ax.add_patch(patch)
+            patch = PolygonPatch(circle, facecolor='r', edgecolor='r', alpha=0.5, zorder=2)
+            ax.add_patch(patch)
+            xrange = [-1, 5]
+            yrange = [-1, 5]
+            ax.set_xlim(*xrange)
+            #ax.set_xticks(range(*xrange) + [xrange[-1]])
+            ax.set_ylim(*yrange)
+            #ax.set_yticks(range(*yrange) + [yrange[-1]])
+            #ax.set_aspect(1)
+
+            # 2: intersection
+            ax = fig.add_subplot(122)
+            patch = PolygonPatch(diferencia, facecolor='g', edgecolor='g', alpha=0.5, zorder=2)
+            ax.add_patch(patch)
+            xrange = [-1, 5]
+            yrange = [-1, 5]
+            ax.set_xlim(*xrange)
+            #ax.set_xticks(range(*xrange) + [xrange[-1]])
+            ax.set_ylim(*yrange)
+            #ax.set_yticks(range(*yrange) + [yrange[-1]])
+            #ax.set_aspect(1)
+        
+        area_medio.append(diferencia.area)
+    return (np.mean(area_medio))
+
+def distancia_f(x1, y1, x2, y2):
+    dist=((x1-x2)**2 + (y1-y2)**2)**0.5
+    return dist
+
+def STNSRP_simulation(Params_month, XX, YY, year_ini, year_fin, temporal_resolution, process,coordinates,storm_radius, Seasonality):
+    
+    
+    
+    landa = Params_month[Params_month.index=='landa'].values[0]
+        
+    Storm_origin = 1/landa##Poisson process
+
+    ipsilon = Params_month[Params_month.index=='ipsilon'].values[0]
+
+    Number_cells_per_storm = ipsilon-1##Random poisson mean ¿ipsilon-1?
+
+    if process=='normal':
+        eta = Params_month[Params_month.index=='eta'].values[0]
+
+        Duracion_cell =1 /eta ##exponencial random
+
+    betha=Params_month[Params_month.index=='betha'].values[0]
+
+    Dist_cell_origin=1/betha ##exponencial random
+
+    fi_may=Params_month[Params_month.index=='fi_may'].values[0]
+
+    Radio=1/fi_may
+
+    if storm_radius==True:
+        fi_may_s = Params_month[Params_month.index=='fi_may_s'].values[0]
+
+        Radio_s  = 1/fi_may_s
+
+    if coordinates == 'UTM':#Lo paso a km
+
+        Grados_ventana=np.max(np.random.exponential(scale=1/np.max(fi_may), size=100000000))*1000 #Lo paso a metros
+    else:
+        Grados_ventana=np.max(np.random.exponential(scale=1/np.max(fi_may), size=100000000))/111 #Lo paso a grados
+
+    P1=[np.min(XX)-Grados_ventana, np.min(YY)-Grados_ventana]; print(P1)
+    P2=[np.max(XX)+Grados_ventana, np.min(YY)-Grados_ventana]; print(P2)
+    P3=[np.max(XX)+Grados_ventana, np.max(YY)+Grados_ventana]; print(P3)
+    P4=[np.min(XX)-Grados_ventana, np.max(YY)+Grados_ventana]; print(P4)
+    xp=[P1[0], P2[0], P3[0], P4[0]]; yp=[P1[1], P2[1], P3[1], P4[1]];
+
+
+    if coordinates=='UTM':
+        Distnacia_xx_cuadrado_km=distancia_f(P1[0], P1[1], P2[0], P2[1])/1000; print(Distnacia_xx_cuadrado_km)
+        Distnacia_yy_cuadrado_km=distancia_f(P1[0], P1[1], P4[0], P4[1])/1000; print(Distnacia_yy_cuadrado_km)
+    else:
+        Distnacia_xx_cuadrado_km=haversine((P1[0], P1[1]), (P2[0], P2[1])); print(Distnacia_xx_cuadrado_km)
+        Distnacia_yy_cuadrado_km=haversine((P1[0], P1[1]), (P4[0], P4[1])); print(Distnacia_yy_cuadrado_km)
+
+    Area_simulacion=Distnacia_xx_cuadrado_km*Distnacia_yy_cuadrado_km; print(Area_simulacion)
+    Area_simulacion_degrees=abs((P1[0]-P2[0])*(P1[1]-P3[1]))
+
+    fi_min=STNSRP_fi_min(Number_cells_per_storm, fi_may); print(str(fi_min) +' Celdas por km² y por tormenta')#
+    mu_c_area=fi_min*Area_simulacion; print(str(mu_c_area) + ' Celdas por tormenta en mi area de simulacion')
+
+    Number_cells_per_storm=mu_c_area
+    
+    print('Storm ini = ' + str(Storm_origin))
+
+    if storm_radius==True:
+        ##Storm radius
+        ## Al introducir el radio de la 
+        ##tormenta como las celdas que quedan fuera tengo que incluirlas digo que si mi radio de tormenta cubre por
+        ##ejemplo la mitad de mi area de simulación entonces tendre el doble de tormentas. El problema es que necesito conocer 
+        ##el area media que ocupa intersecta mi tormenta dentro de mi rectangulo. Si la tormenta fuera infinitesimal el area
+        ##medí sería el area de mi tormenta y si el radio fuera mas grande que la diagonal mayor del rectangulo mi area media
+        ## serie mi area del rectangulo y entonces no habría que dividirlo ni multiplicarlo por nada.
+        x_lim=[np.min(xp), np.max(xp)]; y_lim=[np.min(yp), np.max(yp)]
+        Area_media_tormenta=list()
+        for rs in Radio_s:
+            Area_media_tormenta.append(mean_area_intersect_rectangle_circle(x_lim, y_lim, rs*1000, 'False'))
+        print('Area simulacion degrees ' + str(Area_simulacion_degrees))
+        print('Area media tormenta ' + str(Area_media_tormenta))
+        Storm_origin_with_storm_radious=(np.array(Area_media_tormenta)/np.array(Area_simulacion_degrees))\
+                                        *np.array(Storm_origin)
+        Storm_origin=Storm_origin_with_storm_radious
+    
+    
+    time_d=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='D')
+    time_h=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='h')
+    time_min=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='min')
+
+    Df_sim_join_day  = pd.DataFrame(index=time_d, columns = Datos_.columns)
+    Df_sim_join_hour = pd.DataFrame(index=time_h, columns = Datos_.columns)
+    Df_sim_join_min  = pd.DataFrame(index=time_min, columns = Datos_.columns)
+
+    Intensidad_cells_total=list()
+    Duracion_cells_total=list()
+
+    for perio, monthss in enumerate(Seasonality):
+        n_days=np.sum(np.in1d(Df_sim_join_day.index.month, monthss))
+        position_day=np.in1d(Df_sim_join_day.index.month, monthss)
+        position_hour=np.in1d(Df_sim_join_hour.index.month, monthss)
+
+        Df_sim_day_aux  = pd.period_range('1800', periods=n_days, freq='D')
+        Df_sim_hour_aux = pd.period_range('1800', periods=n_days, freq='h')
+        Df_sim_min_aux  = pd.period_range('1800', periods=n_days, freq='min')
+
+        time_star=datetime.datetime.strptime(str(Df_sim_day_aux[0]), '%Y-%m-%d')
+        time_end=datetime.datetime.strptime(str(Df_sim_day_aux[-1]), '%Y-%m-%d')
+        time_lapso=time_star
+
+        time_storm_origins=list()
+
+        n=0
+
+        if np.size(monthss)==1:
+            monthss=[monthss]
+        else:
+            monthss=[perio+1]
+
+        while time_lapso < time_end:
+            s = np.random.exponential(Storm_origin[monthss[0]-1], 1)
+
+            if temporal_resolution=='d':
+                time_lapso=time_lapso +  datetime.timedelta(days=s[0])##CAMBIAR dependeindo si estas en h o d
+            elif temporal_resolution=='h':
+                time_lapso=time_lapso +  datetime.timedelta(hours=s[0])##CAMBIAR dependeindo si estas en h o d
+
+            time_storm_origins.append(time_lapso)
+            n=n+1
+
+        n_storms=len(time_storm_origins)
+
+        if storm_radius==True:    
+            ##Storm radius (Simulo la posición los centros de las tormentas)
+            Rand_01_x=[np.random.uniform(0, 1) for i in range(n_storms)]
+            x_storms=np.array(Rand_01_x)*(abs(P1[0]-P2[0])) + P1[0]; 
+            Rand_01_y=[np.random.uniform(0, 1) for i in range(n_storms)]
+            y_storms=np.array(Rand_01_y)*(abs(P1[1]-P4[1])) + P1[1]; 
+            Storm_radius=list()
+            for i in (time_storm_origins):
+                Storm_radius.append(np.random.exponential(scale=Radio_s[i.month-1],size=1)[0])
+
+        print('Numero de tormentas ' +  str(n_storms) + ' para los meses ' + str(monthss))
+        Number_cell_per_storm=list()
+        for i, ii in enumerate(time_storm_origins):
+            Number_cell_per_storm.append(1 + (np.random.poisson(Number_cells_per_storm[monthss[0]-1], 1)))
+        print('Numero de celdas de lluvia por tormenta ' + str(np.mean(Number_cell_per_storm)))
+
+        time0 = time_star
+        time_ini_cells=list()
+        time_fin_cells=list()
+        Intensidad_cells=list()
+        Duracion_horas_cells=list()
+        radio_cells=list()
+        x_cells=list(); y_cells=list()    
+
+        for i in range(n_storms):##numero de rain cells
+            time1=time_storm_origins[i] #ojo horas!
+
+            Rand_01_x=[np.random.uniform(0, 1) for i in range(Number_cell_per_storm[i][0])]
+            Rand_x=np.array(Rand_01_x)*(abs(P1[0]-P2[0])) + P1[0];
+            Rand_01_y=[np.random.uniform(0, 1) for i in range(Number_cell_per_storm[i][0])]
+            Rand_y=np.array(Rand_01_y)*(abs(P1[1]-P4[1])) + P1[1]; 
+
+            Distancia_horas_cell_sim=np.random.exponential(scale=Dist_cell_origin[monthss[0]-1], size=Number_cell_per_storm[i])
+            Duracion_horas_cell_sim=np.random.exponential(scale=Duracion_cell[monthss[0]-1], size=Number_cell_per_storm[i])
+
+            for j in range(Number_cell_per_storm[i][0]):#Nuevo
+
+                if spatially_varying_intensity=='KNN':
+                    pos_teta=(np.argmin(np.sqrt((Estaciones.X-Rand_x[j])**2 + (Estaciones.Y-Rand_y[j])**2)))
+                    name_estacion=Dataframe_xi.columns[pos_teta]
+
+                    Intensidad_cell_sim=np.random.exponential(scale=1/Dataframe_xi[name_estacion][monthss[0]],\
+                                                                  size=1)
+
+                if temporal_resolution=='d':
+                    time1_cell=time1 + datetime.timedelta(days=Distancia_horas_cell_sim[j])##CAMBIAR dependeindo si estas en h o d     
+                    time2_cell=time1_cell + datetime.timedelta(days=Duracion_horas_cell_sim[j])##CAMBIAR dependeindo si estas en h o d
+
+                elif temporal_resolution=='h':
+                    time1_cell=time1 + datetime.timedelta(hours=Distancia_horas_cell_sim[j])##CAMBIAR dependeindo si estas en h o d
+                    time2_cell=time1_cell + datetime.timedelta(hours=Duracion_horas_cell_sim[j])##CAMBIAR dependeindo si estas en h o d
+
+                #Intensidad.append(Intensidad_cell_sim)
+                radio_cells.append(np.random.exponential(scale=Radio[monthss[0]-1], size=1))
+                time_ini_cells.append(time1_cell)
+                time_fin_cells.append(time2_cell)
+                x_cells.append(Rand_x[j]); y_cells.append(Rand_y[j]);
+                Intensidad_cells.append(Intensidad_cell_sim)
+                Duracion_horas_cells.append(Duracion_horas_cell_sim[j])       
+        ################################################################################
+        time_ini_cells=np.array(time_ini_cells)
+        time_fin_cells=np.array(time_fin_cells)
+        Intensidad_cells=np.array(Intensidad_cells)
+        x_cells=np.array(x_cells); y_cells=np.array(y_cells)
+        radio_cells=np.array(radio_cells)
+        Duracion_horas_cells=np.array(Duracion_horas_cells)
+        #################################################################################
+        ############################################################################        
+        tt = pd.period_range(start=Df_sim_day_aux[0],end=Df_sim_day_aux[-1], freq='min')
+
+        tt_ordinal=tt.astype(np.int32)*60*10**9
+
+        ############################################################################
+        Anhos=list()
+        for i, ii in enumerate(time_fin_cells):
+            aux=ii; year_aux=aux.year
+            Anhos.append(year_aux)
+        ##Quito las cendas que dentro de una tormenta caen fuera del año límite
+
+        Dentro_fechass=np.where(np.array(Anhos)<year_fin)
+
+        time_ini_cellss=time_ini_cells[Dentro_fechass[0]]
+
+        time_fin_cellss=time_fin_cells[Dentro_fechass[0]]
+
+        Intensidad_cellss=Intensidad_cells[Dentro_fechass[0]]
+
+        Duracion_horas_cellss=Duracion_horas_cells[Dentro_fechass[0]]
+
+        Intensidad_cells=Intensidad_cells[Dentro_fechass[0]]
+
+        x_cells=x_cells[Dentro_fechass[0]]; y_cells=y_cells[Dentro_fechass[0]]; 
+
+        radio_cells=radio_cells[Dentro_fechass[0]];
+
+        for nunu, rr in enumerate(Datos_.columns):
+            #time.sleep(0.01)
+            ##Veo las celdas de lluvia que tocan el primer grid
+            x_aux=XX[nunu]; y_aux=YY[nunu]
+            celdas_mojan=list()
+            for ccc in range(len(Intensidad_cells)):
+                if coordinates=='geographical':
+                    #distancia_celda_grid= (haversine(x_aux, y_aux, x_cells[ccc], y_cells[ccc]))
+                    distancia_celda_grid = (haversine((x_aux, y_aux), (x_cells[ccc], y_cells[ccc])))
+                    if radio_cells[ccc]  > distancia_celda_grid:
+                        celdas_mojan.append(ccc)
+                else:
+                    distancia_celda_grid=(distancia_f(x_aux, y_aux, x_cells[ccc], y_cells[ccc]))
+                    if radio_cells[ccc]>distancia_celda_grid/1000:
+                        celdas_mojan.append(ccc)
+
+            #zeros=np.zeros((len(Df_sim_join_min.index), 1))
+            #aux_t=np.zeros((len(Df_sim_join_min.index), 1))
+
+            time_ini_cells_aux=time_ini_cells[celdas_mojan]
+            time_fin_cells_aux=time_fin_cells[celdas_mojan]
+            Intensidad_cells_aux=Intensidad_cells[celdas_mojan]
+            Duracion_cells_aux=Duracion_horas_cells[celdas_mojan]
+            x_cells_aux=x_cells[celdas_mojan]; y_cells_aux=y_cells[celdas_mojan]
+            radio_cells_aux=radio_cells[celdas_mojan]
+
+            if storm_radius==True:
+                ##Ahora voy a quitar las celdas que no mojan por que se salen del radio de la tormenta
+                time_ini_cells_aux_storm=list();
+                time_fin_cells_aux_storm=list();
+                Intensidad_cells_aux_storm=list();
+                Duracion_cells_aux_storm=list()
+                x_cells_aux_storm=list(); y_cells_aux_storm=list();
+                radio_cells_aux_storm=list()
+                for s, ss in enumerate(time_storm_origins):
+                    if s+1<len(time_storm_origins):
+                        posi_celdas_tormenta=(time_ini_cells_aux>time_storm_origins[s]) & (time_ini_cells_aux<time_storm_origins[s+1])
+                        posi_celdas_tormenta=np.where(posi_celdas_tormenta)[0]
+                    else:
+                        posi_celdas_tormenta=(time_ini_cells_aux>time_storm_origins[s])
+                        posi_celdas_tormenta=np.where(posi_celdas_tormenta)[0]
+
+                    for c in range(len(posi_celdas_tormenta)):
+                        ##Veo si el pixel está dentro de la tormenta 
+                        distancia_celda_storm=(haversine((x_storms[s], y_storms[s]), \
+                                                         (x_cells_aux[posi_celdas_tormenta[c]],\
+                                                         y_cells_aux[posi_celdas_tormenta[c]])))
+                        if Storm_radius[s]+radio_cells_aux[posi_celdas_tormenta[c]]>distancia_celda_storm:
+                            time_ini_cells_aux_storm.append(time_ini_cells_aux[posi_celdas_tormenta[c]]);
+                            time_fin_cells_aux_storm.append(time_fin_cells_aux[posi_celdas_tormenta[c]])
+                            Intensidad_cells_aux_storm.append(Intensidad_cells_aux[posi_celdas_tormenta[c]])
+                            Duracion_cells_aux_storm.append(Duracion_cells_aux[posi_celdas_tormenta[c]])
+                            x_cells_aux_storm.append(x_cells_aux[posi_celdas_tormenta[c]])
+                            y_cells_aux_storm.append(y_cells_aux[posi_celdas_tormenta[c]])
+                            radio_cells_aux_storm.append(radio_cells_aux[posi_celdas_tormenta[c]][0])
+
+                time_ini_cells_aux=np.array(time_ini_cells_aux_storm)
+                time_fin_cells_aux=np.array(time_fin_cells_aux_storm)
+                Intensidad_cells_aux=np.array(Intensidad_cells_aux_storm)
+
+            #if multisite==True:
+            ###################OJO estoy haciendo simulación multisite. Cuando hago IDF o kNN cambia mucho la
+            #precipitación media
+            xixi=Dataframe_xi[Dataframe_xi.index==monthss[0]].values[0][nunu]
+            Intensidad_cells_aux2=np.random.exponential(scale=1/xixi, size=len(Intensidad_cells_aux))
+            Intensidad_cells_aux=Intensidad_cells_aux2.copy()
+            ####################
+            ##Acumulo cada celda de lluvia en minutos para luego agruparlo en horas
+
+            t_ini = np.hstack([time_ini_cells_aux, time_fin_cells_aux])
+
+            if process=='cells':
+                i_ini = np.hstack([Intensidad_cells_aux.T, -Intensidad_cells_aux.T])
+                i_ini = i_ini[0]
+            else: 
+                i_ini = np.hstack([Intensidad_cells_aux.T, -Intensidad_cells_aux.T])
+                #if multisite==True:
+                a=1
+                #else:
+                #    i_ini = i_ini[0]#OJO PONER
+
+            orden = np.argsort(t_ini)
+            t = t_ini[orden]
+
+            i = np.cumsum(i_ini[orden])
+
+            i[i<0] = 0
+
+            rain=i.copy()
+
+            t_ordinal= pd.PeriodIndex(t.astype(str),freq='N').astype(np.int32)
+
+            rainfall = interp1d(t_ordinal, rain, kind="zero", bounds_error=False, fill_value=0.)
+
+            rrain = rainfall(tt_ordinal)
+
+            Date=pd.DataFrame(index=tt)
+
+            if temporal_resolution=='d':
+                Date['Rain']=rrain/(60*24)
+            elif temporal_resolution=='h':
+                Date['Rain']=rrain/(60)###calculo todo en horas y lo estoy interpolando a minutos por eso lo divido entre 60. Si interpolase
+
+            df = Date.copy()   
+
+            del Date
+
+
+            df2 = pd.DataFrame(df.groupby([df.index.year,df.index.month,df.index.day])[['Rain']].sum().values,
+                               index = pd.period_range(start=df.index[0],end=df.index[-1],freq='D'))
+            df3 = pd.DataFrame(df.groupby([df.index.year,df.index.month,df.index.day,df.index.hour])[['Rain']].sum().values,
+                               index = pd.period_range(start=df.index[0],end=df.index[-1],freq='h'))
+
+            #Df_sim_join_day['Rain'].iloc[np.where(position_day)[0][0:len(df2)]]=df2.values.flatten()
+
+            Df_sim_join_day[rr].iloc[np.where(position_day)[0][0:len(df2)]]   = df2.values.flatten()
+
+
+            Df_sim_join_hour[rr].iloc[np.where(position_hour)[0][0:len(df3)]] = df3.values.flatten()
+
+            del rainfall, t_ordinal, rrain, i, t, orden, t_ini, i_ini
+            
+    return Df_sim_join_day, Df_sim_join_hour
     
 
 
