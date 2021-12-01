@@ -28,6 +28,7 @@ setup(  name='NEOPRENE',
             'datetime',
             'matplotlib',
             'pyyaml',
+            'haversine',
         ],
         extras_require={'plotting': ['matplotlib>=2.2.0', 'jupyter','jupyterlab']}
         )

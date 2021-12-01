@@ -41,7 +41,7 @@ class Calibration(object):
         
     
         self.statistics_dataframe   = statistics.statistics_dataframe.copy()
-        self.crosscorr_dataframe = statistics.crosscorr_dataframe.copy()
+        self.crosscorr_dataframe    = statistics.crosscorr_dataframe.copy()
    
         ##Limits are obtained at the indicated time resolution
         if self.hiperparams.temporal_resolution=='d':

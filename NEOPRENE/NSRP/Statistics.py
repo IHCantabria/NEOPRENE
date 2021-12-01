@@ -53,8 +53,8 @@ def statistics_from_serie(statistics_name, Seasonality_str, Seasonality, tempora
         
         
             ## We calculate the defined statistics to be adjusted and I enter them in a dataframe.
-        
         statististics_values = calculate_statistics(Datos,statistics_name, temporal_resolution)
+        
         statististics_dataframe.loc[:,str(prii)]=statististics_values
     return statististics_dataframe
 

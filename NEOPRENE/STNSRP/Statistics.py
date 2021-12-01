@@ -131,8 +131,8 @@ class Statistics (object):
             else:
                 #self.statististics_dataframe = statistics_from_serie(statistics_name,Seasonality_str,Seasonality,temporal_resolution, time_series)
                 statististics_dataframe_dic = statistics_from_several_series(statistics_name,Seasonality_str,Seasonality,temporal_resolution, time_series)
-                self.statistics_dataframe = change_statistics_dic_order(statististics_dataframe_dic, Seasonality)
-                self.crosscorr_dataframe = cross_corr(statistics_name,Seasonality,temporal_resolution, time_series, attributes, func, coordinates)
+                self.statistics_dataframe   = change_statistics_dic_order(statististics_dataframe_dic, Seasonality)
+                self.crosscorr_dataframe    = cross_corr(statistics_name,Seasonality,temporal_resolution, time_series, attributes, func, coordinates)
 
         elif file != None:
             self.statististics_dataframe = statistics_from_file(statistics_name,Seasonality_str,Seasonality,temporal_resolution, file)

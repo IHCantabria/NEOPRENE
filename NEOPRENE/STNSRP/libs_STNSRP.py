@@ -24,7 +24,18 @@ from datetime import date
 from datetime import timedelta
 from scipy import stats
 from scipy.optimize import curve_fit
+import math as mt
+from math import *
 
+def scale_funtion(x, landa, ipsilon, eta, alpha):
+    return (((landa*mt.gamma(2)*ipsilon))/(x*eta))
+
+def index_string(param, string):
+    if string in param:
+        param_list=list(param)
+        return param_list.index(string)
+    else:
+        return None
 
 def calculate_statistics(Data,statistics,temporal_resolution):
     """ 
@@ -757,6 +768,10 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
         del rr, rainfall, tt, t_ordinal,tt_ordinal, rain, i, t, orden, t_ini, i_ini,df, df3, df2
     return Df_sim_join_hour, Df_sim_join_day,\
            np.hstack(Intensity_cells_total), np.hstack(Time_cells_total)
+
+
+def STNSRP_simulation():
+    
 
 
 
