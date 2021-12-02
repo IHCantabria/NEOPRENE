@@ -7,4 +7,3 @@ dist/*
 *egg-info*
 notebooks/CAL*
 notebooks/SIM*
-notebooks/auxiliary-materials/SN/*

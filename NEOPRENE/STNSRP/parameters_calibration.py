@@ -22,9 +22,12 @@ class parameters_calibration(object):
         self.Dataframe_xi_months    = Dataframe_xi_months
 
     def save_files(self, path_output_files): 
-        self.Fitted_parameters.to_csv(path_output_files   + './Calibrated_parameters.csv')
-        self.statististics_Real.to_csv(path_output_files  + './statististics_real.csv')
-        self.statististics_Fit.to_csv(path_output_files   + './statististics_fit.csv')
-        self.Dataframe_xi_months.to_csv(path_output_files + './xi_months.csv')
+        self.Fitted_parameters.to_csv(path_output_files   + 'Calibrated_parameters.csv')
+        self.statististics_Fit.to_csv(path_output_files   + 'statististics_fit.csv')
+        self.Dataframe_xi_months.to_csv(path_output_files + 'xi_months.csv')
+        
+        for i in self.Fitted_parameters.columns:
+            self.statististics_Real[i].to_csv(path_output_files+'statististics_real_'+str(i)+'.csv')
+            
             
         

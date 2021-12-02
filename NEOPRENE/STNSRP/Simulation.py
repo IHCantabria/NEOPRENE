@@ -10,11 +10,11 @@ Library containing classes for simulating time series from the model.
 
 
 
-from NEOPRENE.NSRP.MathematicalPropertiesNSRP import *
-from NEOPRENE.NSRP.utils import *
-from NEOPRENE.NSRP.libs_NSRP import *
-from NEOPRENE.NSRP.inputs_simulation import *
-from NEOPRENE.NSRP.outputs_simulation import *
+from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
+from NEOPRENE.STNSRP.utils import *
+from NEOPRENE.STNSRP.libs_STNSRP import *
+from NEOPRENE.STNSRP.inputs_simulation import *
+from NEOPRENE.STNSRP.outputs_simulation import *
 import time
 
 class Simulation(object):
@@ -24,10 +24,12 @@ class Simulation(object):
     def __call__(self, params_cal, Input_Series, Input_Attr):
    
         statististics_sim_df=pd.DataFrame(index=self.hiperparams.statistics_name,columns=self.hiperparams.Seasonality_str)
+    
+        list_params = inputs_simulation(params_cal).params_cal
         
-        Df_params = inputs_simulation(params_cal).params_cal
+        Df_params = list_params[0]
         
-        Dataframe_xi_months = XI_MONTHS(Input_Series, CAL1, CAL)
+        Dataframe_xi_months = list_params[1]
         
         Df_params=allmonths(Df_params)
         
@@ -43,8 +45,8 @@ class Simulation(object):
 		## We start with synthetic simulation and statistical calculations.
         
         [Df_sim_join_hour_, Df_sim_join_day_]=\
-            STNSRP_simulation(Df_params, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, self.hiperparams.process,
-                             self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality)
+            STNSRP_simulation(Df_params, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, self.hiperparams.process,
+                             self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.index)
         
         ## Real, adjusted and simulated statistical calculations.
         
@@ -53,10 +55,8 @@ class Simulation(object):
             Data=Df_sim_join_day_.copy()
         elif self.hiperparams.temporal_resolution == 'h':
             Data=Df_sim_join_hour_.copy()
-        Data[Data['Rain']<0]=np.nan
-        Data[Data['Rain']<0]=np.nan
-        
-        
+        Data[Data<0]=np.nan
+    
         statististics_sim_df = Statistics(self.hiperparams, time_series = Data, attributes = Input_Attr)
 
         results = outputs_simulation(Df_sim_join_day_,Df_sim_join_hour_,statististics_sim_df, self.hiperparams.temporal_resolution)

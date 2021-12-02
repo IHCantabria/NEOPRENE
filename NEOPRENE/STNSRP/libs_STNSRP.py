@@ -14,6 +14,7 @@ Rectangular Pulses (NSRP).
 from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
 from NEOPRENE.STNSRP.utils import *
 import NEOPRENE.STNSRP.PSOMdJ as pso
+from haversine import haversine, Unit
 import numpy as np
 import pandas as pd
 import scipy as sp
@@ -142,7 +143,7 @@ def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
             y2=Estaciones[Estaciones['ID']==jj].Y.values; y2=y2[0]
             datos2=Series[jj].values
             if (coordinates=='Geographical') or (coordinates=='geographical'):
-                Distancia[ii][jj]=haversine(x1, y1, x2, y2)
+                Distancia[ii][jj]=haversine((x1, y1), (x2, y2))
             elif coordinates=='UTM':
                 Distancia[ii][jj]=distancia_f(x1, y1, x2, y2)
                 Distancia=Distancia/1000#Lo paso a kilometros
@@ -813,9 +814,7 @@ def distancia_f(x1, y1, x2, y2):
     dist=((x1-x2)**2 + (y1-y2)**2)**0.5
     return dist
 
-def STNSRP_simulation(Params_month, XX, YY, year_ini, year_fin, temporal_resolution, process,coordinates,storm_radius, Seasonality):
-    
-    
+def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, temporal_resolution, process,coordinates,storm_radius, Seasonality, stations):
     
     landa = Params_month[Params_month.index=='landa'].values[0]
         
@@ -853,6 +852,7 @@ def STNSRP_simulation(Params_month, XX, YY, year_ini, year_fin, temporal_resolut
     P2=[np.max(XX)+Grados_ventana, np.min(YY)-Grados_ventana]; print(P2)
     P3=[np.max(XX)+Grados_ventana, np.max(YY)+Grados_ventana]; print(P3)
     P4=[np.min(XX)-Grados_ventana, np.max(YY)+Grados_ventana]; print(P4)
+    
     xp=[P1[0], P2[0], P3[0], P4[0]]; yp=[P1[1], P2[1], P3[1], P4[1]];
 
 
@@ -896,9 +896,9 @@ def STNSRP_simulation(Params_month, XX, YY, year_ini, year_fin, temporal_resolut
     time_h=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='h')
     time_min=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='min')
 
-    Df_sim_join_day  = pd.DataFrame(index=time_d, columns = Datos_.columns)
-    Df_sim_join_hour = pd.DataFrame(index=time_h, columns = Datos_.columns)
-    Df_sim_join_min  = pd.DataFrame(index=time_min, columns = Datos_.columns)
+    Df_sim_join_day  = pd.DataFrame(index=time_d, columns = stations)
+    Df_sim_join_hour = pd.DataFrame(index=time_h, columns = stations)
+    Df_sim_join_min  = pd.DataFrame(index=time_min, columns = stations)
 
     Intensidad_cells_total=list()
     Duracion_cells_total=list()
@@ -975,12 +975,11 @@ def STNSRP_simulation(Params_month, XX, YY, year_ini, year_fin, temporal_resolut
 
             for j in range(Number_cell_per_storm[i][0]):#Nuevo
 
-                if spatially_varying_intensity=='KNN':
-                    pos_teta=(np.argmin(np.sqrt((Estaciones.X-Rand_x[j])**2 + (Estaciones.Y-Rand_y[j])**2)))
-                    name_estacion=Dataframe_xi.columns[pos_teta]
+                pos_teta=(np.argmin(np.sqrt((XX-Rand_x[j])**2 + (YY-Rand_y[j])**2)))
+                name_estacion=Dataframe_xi.columns[pos_teta]
 
-                    Intensidad_cell_sim=np.random.exponential(scale=1/Dataframe_xi[name_estacion][monthss[0]],\
-                                                                  size=1)
+                Intensidad_cell_sim=np.random.exponential(scale=1/Dataframe_xi[name_estacion][monthss[0]],\
+                                                              size=1)
 
                 if temporal_resolution=='d':
                     time1_cell=time1 + datetime.timedelta(days=Distancia_horas_cell_sim[j])##CAMBIAR dependeindo si estas en h o d     
@@ -1033,7 +1032,7 @@ def STNSRP_simulation(Params_month, XX, YY, year_ini, year_fin, temporal_resolut
 
         radio_cells=radio_cells[Dentro_fechass[0]];
 
-        for nunu, rr in enumerate(Datos_.columns):
+        for nunu, rr in enumerate(stations):
             #time.sleep(0.01)
             ##Veo las celdas de lluvia que tocan el primer grid
             x_aux=XX[nunu]; y_aux=YY[nunu]

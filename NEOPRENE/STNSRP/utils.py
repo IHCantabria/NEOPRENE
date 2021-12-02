@@ -18,19 +18,21 @@ import datetime
 from datetime import timedelta
 
 def allmonths(dataframe):
-    """We move the dataframe to 12 columns with 12 months"""
-    
-    dataframe_meses=pd.DataFrame(index=dataframe.index, columns=np.arange(1,13))
-    if len(dataframe.columns)==12:
-        dataframe_meses.loc[:,:] = dataframe.values
-    else:
-        for i,ii in enumerate(dataframe.columns):
-            for j in list(map(int, ii[1:-1].split(','))):
-                dataframe_meses.loc[:,j] = dataframe.loc[:,ii]
+    """Paso el dataframe a 12 columnas con 12 meses"""
+    if len(dataframe.columns)==12: 
+        dataframe_meses=dataframe
 
-   
-    return dataframe_meses
+    else: 
+        dataframe_meses=pd.DataFrame(index=dataframe.index)
+        for i in dataframe.columns:
+            if np.size(i)==1: dataframe_meses[i]=dataframe[i]
+            else: 
+                for ii in i: dataframe_meses[ii]=dataframe[i]
 
+    dataframe=pd.DataFrame(index=dataframe_meses.index)
+    for i in range(1, 13):
+        dataframe[i]=dataframe_meses[i]
+    return dataframe
 
 def datetime2matlabdn(dt):
     mdn = dt + timedelta(days = 366)
@@ -80,22 +82,6 @@ def func(x, a, b, c):
 def distancia_f(x1, y1, x2, y2):
     dist=((x1-x2)**2 + (y1-y2)**2)**0.5
     return dist
-    
-def haversine(lon1, lat1, lon2, lat2):
-    from math import radians, cos, sin, asin, sqrt
-    """
-    Calculate the great circle distance between two points 
-    on the earth (specified in decimal degrees)
-    """
-    # convert decimal degrees to radians 
-    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-    # haversine formula 
-    dlon = lon2 - lon1 
-    dlat = lat2 - lat1 
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a)) 
-    km = 6367 * c
-    return km
 
 def IDW_f(xx, yy, zz, x, y, betha):
     '''

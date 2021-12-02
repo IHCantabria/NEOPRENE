@@ -145,7 +145,7 @@ class Simulation(object):
         self.year_ini                = hiper_params['year_ini']
         self.year_fin                = hiper_params['year_fin']
         self.coordinates             = hiper_params['coordinates']
-        self.storm_raidus            = hiper_params['storm_radius']
+        self.storm_radius            = hiper_params['storm_radius']
         
         if self.Seasonality_type=='annual':
             Seasonality=list()
