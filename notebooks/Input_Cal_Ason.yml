@@ -8,7 +8,7 @@ statistics_name: ['var_1', 'var_2', 'var_3', 'var_4', 'autocorr_1_1', 'autocorr_
 weights: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 coordinates: 'geographical' #geographical/UTM
 storm_radius: False
-number_iterations: 20
+number_iterations: 40
 number_bees: 1000
 time_between_storms: [20, 5000]
 number_storm_cells: [2, 100]
