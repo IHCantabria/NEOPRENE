@@ -48,7 +48,7 @@ class Simulation(object):
         
         [Df_sim_join_day_,Df_sim_join_hour_]=\
             STNSRP_simulation(Df_params, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, self.hiperparams.process,
-                             self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID)
+                             self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID.values)
         
         ## Real, adjusted and simulated statistical calculations.
         

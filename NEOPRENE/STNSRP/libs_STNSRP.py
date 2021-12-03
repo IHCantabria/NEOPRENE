@@ -218,9 +218,9 @@ def XI_MONTHS(Data, Dataframe_parametros, process):
                     alpha1=Dataframe_parametros[season]['alpha1']; alpha1=Dataframe_parametros[season]['alpha2']; 
                 else: alpha1=1; alpha2=1
                 xi1=(scale_funtion(mean_rain,Dataframe_parametros[season]['landa1'],\
-                         Dataframe_parametros[season]['ipsilon1'], Dataframe_parametros[i]['eta1'],alpha1))
-                xi2=(scale_funtion(mean_rain,Dataframe_parametros[season]['landa1'],\
-                         Dataframe_parametros[season]['ipsilon1'], Dataframe_parametros[i]['eta2'],alpha2))
+                         Dataframe_parametros[season]['ipsilon1'], Dataframe_parametros[season]['eta1'],alpha1))
+                xi2=(scale_funtion(mean_rain,Dataframe_parametros[season]['landa2'],\
+                         Dataframe_parametros[season]['ipsilon2'], Dataframe_parametros[season]['eta2'],alpha2))
                 xis.append(xi1+xi2)
 
         Dataframe_xi[gauge]=xis

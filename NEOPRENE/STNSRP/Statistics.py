@@ -121,7 +121,6 @@ class Statistics (object):
         Seasonality         = hiperparams.Seasonality
         temporal_resolution = hiperparams.temporal_resolution
         coordinates         = hiperparams.coordinates
-        temporal_resolution = hiperparams.temporal_resolution
             
         if type(time_series)!=type(None) and file != None:
             raise Exception ('It is not possible to enter two types of data')

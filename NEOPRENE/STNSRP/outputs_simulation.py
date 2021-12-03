@@ -26,9 +26,11 @@ class outputs_simulation (object):
         if self.temporal_resolution == 'd':
             for i in self.Seasonality:
                 self.statististics_Simulated[i].to_csv(path_output_files+'statistic_daily_simulated_'+ str(i)+ '.csv')
-                self.crosscorr_Simulated[i].to_csv(path_output_files+'crosscorr_daily_simulated_'+ str(i)+ '.csv')
+                self.crosscorr_Simulated['crosscorr_1'][i].to_csv(path_output_files+'crosscorr_1_daily_simulated_'+ str(i)+ '.csv')
+                self.crosscorr_Simulated['crosscorr_2'][i].to_csv(path_output_files+'crosscorr_2_daily_simulated_'+ str(i)+ '.csv')
             
         elif self.temporal_resolution == 'h':
             for i in self.Seasonality:
                 self.statististics_Simulated[i].to_csv(path_output_files+'statistic_hourly_simulated_'+ str(i)+ '.csv')
-                self.crosscorr_Simulated[i].to_csv(path_output_files+'crosscorr_hourly_simulated_'+ str(i)+ '.csv')
+                self.crosscorr_Simulated['crosscorr_1'][i].to_csv(path_output_files+'crosscorr_1_hourly_simulated_'+ str(i)+ '.csv')
+                self.crosscorr_Simulated['crosscorr_2'][i].to_csv(path_output_files+'crosscorr_2_hourly_simulated_'+ str(i)+ '.csv')
