@@ -1,6 +1,5 @@
 '''
 Library containing classes for simulating time series from the model.
-
 	Authors: 
         + Javier Díez Sierra
 	    + Salvador Navas Fernández
@@ -15,6 +14,7 @@ from NEOPRENE.STNSRP.utils import *
 from NEOPRENE.STNSRP.libs_STNSRP import *
 from NEOPRENE.STNSRP.inputs_simulation import *
 from NEOPRENE.STNSRP.outputs_simulation import *
+from NEOPRENE.STNSRP.Statistics import Statistics
 import time
 
 class Simulation(object):
@@ -28,6 +28,8 @@ class Simulation(object):
         list_params = inputs_simulation(params_cal).params_cal
         
         Df_params = list_params[0]
+        
+        Df_params.columns = self.hiperparams.Seasonality
         
         Dataframe_xi_months = list_params[1]
         
@@ -46,7 +48,7 @@ class Simulation(object):
         
         [Df_sim_join_hour_, Df_sim_join_day_]=\
             STNSRP_simulation(Df_params, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, self.hiperparams.process,
-                             self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.index)
+                             self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID)
         
         ## Real, adjusted and simulated statistical calculations.
         
