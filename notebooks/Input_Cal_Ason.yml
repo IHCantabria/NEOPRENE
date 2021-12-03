@@ -1,6 +1,6 @@
 #YAML
 ---
-Seasonality_type: 'annual'
+Seasonality_type: 'seasonal'
 Seasonality_user:  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 temporal_resolution: 'd'
 process: 'normal'

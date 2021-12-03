@@ -61,6 +61,6 @@ class Simulation(object):
     
         statististics_sim_df = Statistics(self.hiperparams, time_series = Data, attributes = Input_Attr)
 
-        results = outputs_simulation(Df_sim_join_day_,Df_sim_join_hour_,statististics_sim_df, self.hiperparams.temporal_resolution)
+        results = outputs_simulation(Df_sim_join_day_,Df_sim_join_hour_,statististics_sim_df, self.hiperparams.temporal_resolution,self.hiperparams.Seasonality)
 
         return results
