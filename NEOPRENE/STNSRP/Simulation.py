@@ -46,7 +46,7 @@ class Simulation(object):
         print('')
 		## We start with synthetic simulation and statistical calculations.
         
-        [Df_sim_join_hour_, Df_sim_join_day_]=\
+        [Df_sim_join_day_,Df_sim_join_hour_]=\
             STNSRP_simulation(Df_params, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, self.hiperparams.process,
                              self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID)
         
@@ -57,10 +57,14 @@ class Simulation(object):
             Data=Df_sim_join_day_.copy()
         elif self.hiperparams.temporal_resolution == 'h':
             Data=Df_sim_join_hour_.copy()
-        Data[Data<0]=np.nan
+            
+        Data[Data<0.001]=0
     
         statististics_sim_df = Statistics(self.hiperparams, time_series = Data, attributes = Input_Attr)
+        
+        statistics_dataframe   = statististics_sim_df.statistics_dataframe.copy()
+        crosscorr_dataframe    = statististics_sim_df.crosscorr_dataframe.copy()
 
-        results = outputs_simulation(Df_sim_join_day_,Df_sim_join_hour_,statististics_sim_df, self.hiperparams.temporal_resolution,self.hiperparams.Seasonality)
+        results = outputs_simulation(Df_sim_join_day_,Df_sim_join_hour_,statistics_dataframe,crosscorr_dataframe, self.hiperparams.temporal_resolution,self.hiperparams.Seasonality)
 
         return results

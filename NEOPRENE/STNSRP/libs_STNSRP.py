@@ -27,6 +27,7 @@ from scipy import stats
 from scipy.optimize import curve_fit
 import math as mt
 from math import *
+import tqdm
 
 def scale_funtion(x, landa, ipsilon, eta, alpha):
     return (((landa*mt.gamma(2)*ipsilon))/(x*eta))
@@ -186,7 +187,7 @@ def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
     
     cross_correlation.Correlacion_distancia=Correlacion_distancia
     
-    popt, pcov = curve_fit(func, xdata, ydata)
+    popt, pcov = curve_fit(func, xdata, ydata, maxfev=1000)
     
     #plt.plot(xdata, ydata, 'b.')
     #plt.plot(xdata, func(xdata, popt[0], popt[1], popt[2]), 'r.')
@@ -844,9 +845,11 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
 
     if coordinates == 'UTM':#Lo paso a km
 
-        Grados_ventana=np.max(np.random.exponential(scale=1/np.max(fi_may), size=100000000))*1000 #Lo paso a metros
+        #Grados_ventana=np.max(np.random.exponential(scale=1/np.max(fi_may), size=100000000))*1000 #Lo paso a metros
+        Grados_ventana=np.percentile(np.random.exponential(scale=1/np.max(fi_may), size=100000000),98)*1000 #Lo paso a metros
     else:
-        Grados_ventana=np.max(np.random.exponential(scale=1/np.max(fi_may), size=100000000))/111 #Lo paso a grados
+        #Grados_ventana=np.max(np.random.exponential(scale=1/np.max(fi_may), size=100000000))/111 #Lo paso a grados
+        Grados_ventana=np.percentile(np.random.exponential(scale=1/np.max(fi_may), size=100000000),98)/111
 
     P1=[np.min(XX)-Grados_ventana, np.min(YY)-Grados_ventana]; print(P1)
     P2=[np.max(XX)+Grados_ventana, np.min(YY)-Grados_ventana]; print(P2)
@@ -894,11 +897,11 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
     
     time_d=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='D')
     time_h=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='h')
-    time_min=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='min')
+    #time_min=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='min')
 
     Df_sim_join_day  = pd.DataFrame(index=time_d, columns = stations)
     Df_sim_join_hour = pd.DataFrame(index=time_h, columns = stations)
-    Df_sim_join_min  = pd.DataFrame(index=time_min, columns = stations)
+    #Df_sim_join_min  = pd.DataFrame(index=time_min, columns = stations)
 
     Intensidad_cells_total=list()
     Duracion_cells_total=list()
@@ -961,8 +964,8 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
         Duracion_horas_cells=list()
         radio_cells=list()
         x_cells=list(); y_cells=list()    
-
-        for i in range(n_storms):##numero de rain cells
+        
+        for i in tqdm.tqdm(range(n_storms)):##numero de rain cells
             time1=time_storm_origins[i] #ojo horas!
 
             Rand_01_x=[np.random.uniform(0, 1) for i in range(Number_cell_per_storm[i][0])]

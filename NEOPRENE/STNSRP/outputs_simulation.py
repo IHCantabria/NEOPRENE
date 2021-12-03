@@ -11,10 +11,11 @@ Library containing classes for keeping the simulation output.
 import pandas as pd
 
 class outputs_simulation (object):
-    def __init__(self,df_sim_join_daily,df_sim_join_hour,statististics_sim_df,temporal_resolution, Seasonality):
+    def __init__(self,df_sim_join_daily,df_sim_join_hour,statististics_sim_df,crosscorr_sim_df,temporal_resolution, Seasonality):
         self.Daily_Simulation        = df_sim_join_daily
         self.Hourly_Simulation       = df_sim_join_hour
         self.statististics_Simulated = statististics_sim_df
+        self.crosscorr_Simulated     = crosscorr_sim_df
         self.temporal_resolution     = temporal_resolution
         self.Seasonality             = Seasonality
 
@@ -25,7 +26,9 @@ class outputs_simulation (object):
         if self.temporal_resolution == 'd':
             for i in self.Seasonality:
                 self.statististics_Simulated[i].to_csv(path_output_files+'statistic_daily_simulated_'+ str(i)+ '.csv')
+                self.crosscorr_Simulated[i].to_csv(path_output_files+'crosscorr_daily_simulated_'+ str(i)+ '.csv')
             
         elif self.temporal_resolution == 'h':
             for i in self.Seasonality:
                 self.statististics_Simulated[i].to_csv(path_output_files+'statistic_hourly_simulated_'+ str(i)+ '.csv')
+                self.crosscorr_Simulated[i].to_csv(path_output_files+'crosscorr_hourly_simulated_'+ str(i)+ '.csv')

@@ -26,8 +26,14 @@ class parameters_calibration(object):
         self.statististics_Fit.to_csv(path_output_files   + 'statististics_fit.csv')
         self.Dataframe_xi_months.to_csv(path_output_files + 'xi_months.csv')
         
+        
         for i in self.Fitted_parameters.columns:
             self.statististics_Real[i].to_csv(path_output_files+'statististics_real_'+str(i)+'.csv')
+            self.crosscorr_Real['crosscorr_1'][i].to_csv(path_output_files+'crosscorr_1_real_'+str(i)+'.csv')
+            self.crosscorr_Real['crosscorr_2'][i].to_csv(path_output_files+'crosscorr_2_real_'+str(i)+'.csv')
+            self.crosscorr_Fit['crosscorr_1'][i].to_csv(path_output_files + 'crosscorr_1_Fit_'+str(i)+'.csv')
+            self.crosscorr_Fit['crosscorr_2'][i].to_csv(path_output_files + 'crosscorr_2_Fit_'+str(i)+'.csv')
+            
             
             
         

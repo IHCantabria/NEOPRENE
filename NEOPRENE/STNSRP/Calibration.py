@@ -100,7 +100,7 @@ class Calibration(object):
 
             if self.hiperparams.storm_radius==False:
 
-                param_s=['landa1', 'ipsilon1', 'eta1', 'betha1', 'fi_may1', 'landa2', 'ipsilon2', 'eta2', 'xi2', 'betha2', 'fi_may2']
+                param_s=['landa1', 'ipsilon1', 'eta1', 'betha1', 'fi_may1', 'landa2', 'ipsilon2', 'eta2', 'betha2', 'fi_may2']
                 
                 # We create a dataframe to store the adjusted intensity function parameters.
                 Dataframe_params=pd.DataFrame(index=param_s); n_p=10
@@ -111,7 +111,7 @@ class Calibration(object):
 
             elif self.hiperparams.storm_radius==True:
 
-                param_s=['landa1', 'ipsilon1', 'eta1', 'betha1', 'fi_may1', 'fi_may_s1', 'landa2', 'ipsilon2', 'eta2', 'xi2', 'betha2', 'fi_may1', 'fi_may_s2']
+                param_s=['landa1', 'ipsilon1', 'eta1', 'betha1', 'fi_may1', 'fi_may_s1', 'landa2', 'ipsilon2', 'eta2', 'betha2', 'fi_may1', 'fi_may_s2']
                 
                 # We create a dataframe to store the adjusted intensity function parameters.
                 Dataframe_params=pd.DataFrame(index=param_s); n_p=12
