@@ -144,10 +144,10 @@ def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
             y2=Estaciones[Estaciones['ID']==jj].Y.values; y2=y2[0]
             datos2=Series[jj].values
             if (coordinates=='Geographical') or (coordinates=='geographical'):
-                Distancia[ii][jj]=haversine((x1, y1), (x2, y2))
+                Distancia[ii][jj]=haversine((y1, x1), (y2, x2))
             elif coordinates=='UTM':
-                Distancia[ii][jj]=distancia_f(x1, y1, x2, y2)
-                Distancia=Distancia/1000#Lo paso a kilometros
+                Distancia[ii][jj]=distancia_f(x1, y1, x2, y2)/1000
+                #Distancia=Distancia/1000#Lo paso a kilometros
                 
             pos_no_nans=np.intersect1d(np.where(~np.isnan(Series[ii].values)), np.where(~np.isnan(Series[jj].values)))
             corr_s=stats.pearsonr(Series[ii].values[pos_no_nans], Series[jj].values[pos_no_nans])
@@ -863,8 +863,8 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
         Distnacia_xx_cuadrado_km=distancia_f(P1[0], P1[1], P2[0], P2[1])/1000; print(Distnacia_xx_cuadrado_km)
         Distnacia_yy_cuadrado_km=distancia_f(P1[0], P1[1], P4[0], P4[1])/1000; print(Distnacia_yy_cuadrado_km)
     else:
-        Distnacia_xx_cuadrado_km=haversine((P1[0], P1[1]), (P2[0], P2[1])); print(Distnacia_xx_cuadrado_km)
-        Distnacia_yy_cuadrado_km=haversine((P1[0], P1[1]), (P4[0], P4[1])); print(Distnacia_yy_cuadrado_km)
+        Distnacia_xx_cuadrado_km=haversine((P1[1], P1[0]), (P2[1], P2[0])); print(Distnacia_xx_cuadrado_km)
+        Distnacia_yy_cuadrado_km=haversine((P1[1], P1[0]), (P4[1], P4[0])); print(Distnacia_yy_cuadrado_km)
 
     Area_simulacion=Distnacia_xx_cuadrado_km*Distnacia_yy_cuadrado_km; print(Area_simulacion)
     Area_simulacion_degrees=abs((P1[0]-P2[0])*(P1[1]-P3[1]))
@@ -1043,7 +1043,7 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
             for ccc in range(len(Intensidad_cells)):
                 if coordinates=='geographical':
                     #distancia_celda_grid= (haversine(x_aux, y_aux, x_cells[ccc], y_cells[ccc]))
-                    distancia_celda_grid = (haversine((x_aux, y_aux), (x_cells[ccc], y_cells[ccc])))
+                    distancia_celda_grid = (haversine((y_aux, x_aux), (y_cells[ccc], x_cells[ccc])))
                     if radio_cells[ccc]  > distancia_celda_grid:
                         celdas_mojan.append(ccc)
                 else:
@@ -1079,9 +1079,9 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
 
                     for c in range(len(posi_celdas_tormenta)):
                         ##Veo si el pixel está dentro de la tormenta 
-                        distancia_celda_storm=(haversine((x_storms[s], y_storms[s]), \
-                                                         (x_cells_aux[posi_celdas_tormenta[c]],\
-                                                         y_cells_aux[posi_celdas_tormenta[c]])))
+                        distancia_celda_storm=(haversine((y_storms[s], x_storms[s]), \
+                                                         (y_cells_aux[posi_celdas_tormenta[c]],\
+                                                         x_cells_aux[posi_celdas_tormenta[c]])))
                         if Storm_radius[s]+radio_cells_aux[posi_celdas_tormenta[c]]>distancia_celda_storm:
                             time_ini_cells_aux_storm.append(time_ini_cells_aux[posi_celdas_tormenta[c]]);
                             time_fin_cells_aux_storm.append(time_fin_cells_aux[posi_celdas_tormenta[c]])

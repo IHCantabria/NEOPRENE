@@ -98,21 +98,21 @@ def func(x, a, b, c):
 def distancia_f(x1, y1, x2, y2):
     dist=((x1-x2)**2 + (y1-y2)**2)**0.5
     return dist
-def haversine(lon1, lat1, lon2, lat2):
-    from math import radians, cos, sin, asin, sqrt
-    """
-    Calculate the great circle distance between two points 
-    on the earth (specified in decimal degrees)
-    """
-    # convert decimal degrees to radians 
-    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-    # haversine formula 
-    dlon = lon2 - lon1 
-    dlat = lat2 - lat1 
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a)) 
-    km = 6367 * c
-    return km
+#def haversine(lon1, lat1, lon2, lat2):
+#    from math import radians, cos, sin, asin, sqrt
+#    """
+#    Calculate the great circle distance between two points 
+#    on the earth (specified in decimal degrees)
+#    """
+#    # convert decimal degrees to radians 
+#    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+#    # haversine formula 
+#    dlon = lon2 - lon1 
+#    dlat = lat2 - lat1 
+#    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+#    c = 2 * asin(sqrt(a)) 
+#    km = 6367 * c
+#    return km
 
     model.params
     model.plot_summary()
