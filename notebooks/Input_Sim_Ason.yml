@@ -8,4 +8,4 @@ process: 'normal'
 coordinates: 'geographical' #geographical/UTM
 storm_radius: False
 year_ini: 2020             
-year_fin: 2050      
+year_fin: 2080      
