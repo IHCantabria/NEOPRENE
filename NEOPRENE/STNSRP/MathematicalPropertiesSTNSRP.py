@@ -244,7 +244,9 @@ def NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_
         result.append(NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
         -2*landa[i]*(1-P_fi_d(fi_may[i], d))*mu_c[i]*E_X(1/xi[i], alpha[i], 2)*A/(eta[i]**3))
 
-    return multiply(result)
+    #return multiply(result)#original
+    #return sum(result)#debería ser este
+    return np.mean(result)
 
 
 def NSRP_cross_correlation_with_storm_radius(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d, fi_may_storm):
@@ -264,7 +266,9 @@ def NSRP_cross_correlation_with_storm_radius(h,l, landa, mu_c, eta, xi, betha, a
         result.append(P_fi_d(fi_may_storm[i], d)*NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
         -2*landa[i]*(1-P_fi_d(fi_may[i], d))*mu_c[i]*E_X(1/xi[i], alpha[i], 2)*A/(eta[i]**3))
 
-    return np.sum(result)
+    #return multiply(result)#original
+    #return np.sum(result)
+    return np.mean(result)
 
 def fy(fi_may, d, y):
     result=((fi_may*d/(2*cos(y)))+1)*exp(-fi_may*d/(2*cos(y)))

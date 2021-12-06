@@ -9,12 +9,12 @@ Library containing classes for simulating time series from the model.
 
 
 
-from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
-from NEOPRENE.STNSRP.utils import *
-from NEOPRENE.STNSRP.libs_STNSRP import *
-from NEOPRENE.STNSRP.inputs_simulation import *
-from NEOPRENE.STNSRP.outputs_simulation import *
-from NEOPRENE.STNSRP.Statistics import Statistics
+from STNSRP.MathematicalPropertiesSTNSRP import *
+from STNSRP.utils import *
+from STNSRP.libs_STNSRP import *
+from STNSRP.inputs_simulation import *
+from STNSRP.outputs_simulation import *
+from STNSRP.Statistics import Statistics
 import time
 
 class Simulation(object):
@@ -44,11 +44,50 @@ class Simulation(object):
         print('Synthetic simulation')
         print('')
         print('')
+
+
 		## We start with synthetic simulation and statistical calculations.
-        
-        [Df_sim_join_day_,Df_sim_join_hour_]=\
-            STNSRP_simulation(Df_params, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, self.hiperparams.process,
-                             self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID.values)
+
+        if self.hiperparams.process=='normal':
+   
+            [Df_sim_join_day_,Df_sim_join_hour_]=\
+                STNSRP_simulation(Df_params, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, self.hiperparams.process,
+                                 self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID.values)
+
+        elif self.hiperparams.process=='storms':
+
+            if self.hiperparams.storm_radius == False:
+
+                Df_params1=pd.DataFrame(index=['landa', 'ipsilon', 'eta', 'betha', 'fi_may'],columns=Df_params.columns)
+                for i in Df_params.columns:
+                    Df_params1.loc[:,i]=Df_params.loc[:,i].values[0:5]
+
+                Df_params2=pd.DataFrame(index=['landa', 'ipsilon', 'eta', 'betha', 'fi_may'],columns=Df_params.columns)
+                for i in Df_params.columns:
+                    Df_params2.loc[:,i]=Df_params.loc[:,i].values[5:]
+
+            elif self.hiperparams.storm_radius == True:
+
+                Df_params1=pd.DataFrame(index=['landa', 'ipsilon', 'eta', 'betha', 'fi_may', 'fi_may_s'],columns=Df_params.columns)
+                for i in Df_params.columns:
+                    Df_params1.loc[:,i]=Df_params.loc[:,i].values[0:6]
+
+                Df_params2=pd.DataFrame(index=['landa', 'ipsilon', 'eta', 'betha', 'fi_may', 'fi_may_s'],columns=Df_params.columns)
+                for i in Df_params.columns:
+                    Df_params2.loc[:,i]=Df_params.loc[:,i].values[6:]
+
+
+            [Df_sim_join_day_1,Df_sim_join_hour_1]=\
+            STNSRP_simulation(Df_params1, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, 'normal',
+                                 self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID.values)
+
+            [Df_sim_join_day_2,Df_sim_join_hour_2]=\
+            STNSRP_simulation(Df_params2, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, 'normal',
+                                 self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID.values)
+
+
+            Df_sim_join_hour_=Df_sim_join_hour_1 + Df_sim_join_hour_2
+            Df_sim_join_day_=Df_sim_join_day_1 + Df_sim_join_day_2 
         
         ## Real, adjusted and simulated statistical calculations.
         
