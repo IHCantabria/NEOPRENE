@@ -11,9 +11,9 @@ Rectangular Pulses (NSRP).
 
 '''Functions of the NSRP mode'''
 
-from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
-from NEOPRENE.STNSRP.utils import *
-import NEOPRENE.STNSRP.PSOMdJ as pso
+from STNSRP.MathematicalPropertiesSTNSRP import *
+from STNSRP.utils import *
+import STNSRP.PSOMdJ as pso
 from haversine import haversine, Unit
 import numpy as np
 import pandas as pd
@@ -143,11 +143,13 @@ def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
             x2=Estaciones[Estaciones['ID']==jj].X.values; x2=x2[0]
             y2=Estaciones[Estaciones['ID']==jj].Y.values; y2=y2[0]
             datos2=Series[jj].values
-            if (coordinates=='Geographical') or (coordinates=='geographical'):
-                Distancia[ii][jj]=haversine((y1, x1), (y2, x2))
-            elif coordinates=='UTM':
+            if (coordinates.lower()=='geographical'):
+                Distancia[ii][jj]=haversine((y1, x1), (y2, x2), unit=Unit.KILOMETERS)
+            elif coordinates.lower()=='utm':
                 Distancia[ii][jj]=distancia_f(x1, y1, x2, y2)/1000
-                #Distancia=Distancia/1000#Lo paso a kilometros
+            else:
+                raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
+
                 
             pos_no_nans=np.intersect1d(np.where(~np.isnan(Series[ii].values)), np.where(~np.isnan(Series[jj].values)))
             corr_s=stats.pearsonr(Series[ii].values[pos_no_nans], Series[jj].values[pos_no_nans])
@@ -370,8 +372,8 @@ class evaluateInd_PSO(object):
         for k in d_e.keys():
             if isnan(d_e[k]): d_e[k] = 10000
 
+        #print(d_e)
         errores=list(); errores.append([d_e[i] for i in d_e.keys()])
-        
         return np.sum(errores)
 
     def totalError(self, ind):
@@ -812,7 +814,7 @@ def mean_area_intersect_rectangle_circle(x_lim, y_lim, radius, plott):
     return (np.mean(area_medio))
 
 def distancia_f(x1, y1, x2, y2):
-    dist=((x1-x2)**2 + (y1-y2)**2)**0.5
+    dist=(((x1-x2)**2) + ((y1-y2)**2))**0.5
     return dist
 
 def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, temporal_resolution, process,coordinates,storm_radius, Seasonality, stations):
@@ -843,38 +845,42 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
 
         Radio_s  = 1/fi_may_s
 
-    if coordinates == 'UTM':#Lo paso a km
-
+    if coordinates.lower() == 'utm':#Lo paso a km
         #Grados_ventana=np.max(np.random.exponential(scale=1/np.max(fi_may), size=100000000))*1000 #Lo paso a metros
         Grados_ventana=np.percentile(np.random.exponential(scale=1/np.max(fi_may), size=100000000),98)*1000 #Lo paso a metros
-    else:
+    elif coordinates.lower() == 'geographical':
         #Grados_ventana=np.max(np.random.exponential(scale=1/np.max(fi_may), size=100000000))/111 #Lo paso a grados
         Grados_ventana=np.percentile(np.random.exponential(scale=1/np.max(fi_may), size=100000000),98)/111
+    else:
+        raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
 
-    P1=[np.min(XX)-Grados_ventana, np.min(YY)-Grados_ventana]; print(P1)
-    P2=[np.max(XX)+Grados_ventana, np.min(YY)-Grados_ventana]; print(P2)
-    P3=[np.max(XX)+Grados_ventana, np.max(YY)+Grados_ventana]; print(P3)
-    P4=[np.min(XX)-Grados_ventana, np.max(YY)+Grados_ventana]; print(P4)
+    P1=[np.min(XX)-Grados_ventana, np.min(YY)-Grados_ventana]; #print(P1)
+    P2=[np.max(XX)+Grados_ventana, np.min(YY)-Grados_ventana]; #print(P2)
+    P3=[np.max(XX)+Grados_ventana, np.max(YY)+Grados_ventana]; #print(P3)
+    P4=[np.min(XX)-Grados_ventana, np.max(YY)+Grados_ventana]; #print(P4)
     
     xp=[P1[0], P2[0], P3[0], P4[0]]; yp=[P1[1], P2[1], P3[1], P4[1]];
+    print('Simulation corners xp:' + str(xp) + ' yp:' + str(yp)) 
 
 
-    if coordinates=='UTM':
-        Distnacia_xx_cuadrado_km=distancia_f(P1[0], P1[1], P2[0], P2[1])/1000; print(Distnacia_xx_cuadrado_km)
-        Distnacia_yy_cuadrado_km=distancia_f(P1[0], P1[1], P4[0], P4[1])/1000; print(Distnacia_yy_cuadrado_km)
+    if coordinates.lower() == 'utm':
+        Distnacia_xx_cuadrado_km=distancia_f(P1[0], P1[1], P2[0], P2[1])/1000; #print(Distnacia_xx_cuadrado_km)
+        Distnacia_yy_cuadrado_km=distancia_f(P1[0], P1[1], P4[0], P4[1])/1000; #print(Distnacia_yy_cuadrado_km)
+    elif coordinates.lower() == 'geographical':
+        Distnacia_xx_cuadrado_km=haversine((P1[1], P1[0]), (P2[1], P2[0]), unit=Unit.KILOMETERS); #print(Distnacia_xx_cuadrado_km)
+        Distnacia_yy_cuadrado_km=haversine((P1[1], P1[0]), (P4[1], P4[0]), unit=Unit.KILOMETERS); #print(Distnacia_yy_cuadrado_km)
     else:
-        Distnacia_xx_cuadrado_km=haversine((P1[1], P1[0]), (P2[1], P2[0])); print(Distnacia_xx_cuadrado_km)
-        Distnacia_yy_cuadrado_km=haversine((P1[1], P1[0]), (P4[1], P4[0])); print(Distnacia_yy_cuadrado_km)
+        raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
 
-    Area_simulacion=Distnacia_xx_cuadrado_km*Distnacia_yy_cuadrado_km; print(Area_simulacion)
+    Area_simulacion=Distnacia_xx_cuadrado_km*Distnacia_yy_cuadrado_km; print("Simulation area (km²): " + str(Area_simulacion))
     Area_simulacion_degrees=abs((P1[0]-P2[0])*(P1[1]-P3[1]))
 
-    fi_min=STNSRP_fi_min(Number_cells_per_storm, fi_may); print(str(fi_min) +' Celdas por km² y por tormenta')#
-    mu_c_area=fi_min*Area_simulacion; print(str(mu_c_area) + ' Celdas por tormenta en mi area de simulacion')
+    fi_min=STNSRP_fi_min(Number_cells_per_storm, fi_may); print('Cells per storm per km²: ' + str(fi_min))#
+    mu_c_area=fi_min*Area_simulacion; print("Cells per storm in my simulation area: " + str(mu_c_area))
 
     Number_cells_per_storm=mu_c_area
     
-    print('Storm ini = ' + str(Storm_origin))
+    #print('Storm ini = ' + str(Storm_origin))
 
     if storm_radius==True:
         ##Storm radius
@@ -887,13 +893,34 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
         x_lim=[np.min(xp), np.max(xp)]; y_lim=[np.min(yp), np.max(yp)]
         Area_media_tormenta=list()
         for rs in Radio_s:
-            Area_media_tormenta.append(mean_area_intersect_rectangle_circle(x_lim, y_lim, rs*1000, 'False'))
-        print('Area simulacion degrees ' + str(Area_simulacion_degrees))
-        print('Area media tormenta ' + str(Area_media_tormenta))
-        Storm_origin_with_storm_radious=(np.array(Area_media_tormenta)/np.array(Area_simulacion_degrees))\
-                                        *np.array(Storm_origin)
-        Storm_origin=Storm_origin_with_storm_radious
-    
+            if coordinates.lower() == 'utm':
+                rs_units = rs*1000
+            elif coordinates.lower() == 'geographical':
+                rs_units = rs/111
+            else:
+                raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
+            Area_media_tormenta.append(mean_area_intersect_rectangle_circle(x_lim, y_lim, rs_units, 'False'))
+            #print('Area simulacion degrees ' + str(Area_simulacion_degrees))
+            #print('Area media tormenta ' + str(Area_media_tormenta))
+
+
+        if coordinates.lower() == 'utm':
+            Area_media_tormenta_units = Area_media_tormenta
+        elif coordinates.lower() == 'geographical':
+            Area_media_tormenta_units = Area_media_tormenta
+        else:
+            raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
+        
+        Storm_origin_new = []
+        for nst, st_m in enumerate(np.array(Area_media_tormenta_units)):
+            if st_m>Area_simulacion_degrees:
+                Storm_origin_new.append(Storm_origin[nst])
+            else:
+                Storm_origin_new.append(Storm_origin[nst]*(Area_simulacion_degrees/Area_media_tormenta_units[nst]))
+        #Storm_origin_with_storm_radious=(np.array(Area_media_tormenta_units)/np.array(Area_simulacion_degrees))\
+        #                                *np.array(Storm_origin)
+        #Storm_origin=Storm_origin_with_storm_radious
+        Storm_origin = Storm_origin_new
     
     time_d=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='D')
     time_h=pd.period_range(start=str((year_ini)),  end=str((year_fin)), freq='h')
@@ -932,9 +959,9 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
             s = np.random.exponential(Storm_origin[monthss[0]-1], 1)
 
             if temporal_resolution=='d':
-                time_lapso=time_lapso +  datetime.timedelta(days=s[0])##CAMBIAR dependeindo si estas en h o d
+                time_lapso=time_lapso +  datetime.timedelta(days=s[0])
             elif temporal_resolution=='h':
-                time_lapso=time_lapso +  datetime.timedelta(hours=s[0])##CAMBIAR dependeindo si estas en h o d
+                time_lapso=time_lapso +  datetime.timedelta(hours=s[0])
 
             time_storm_origins.append(time_lapso)
             n=n+1
@@ -951,11 +978,11 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
             for i in (time_storm_origins):
                 Storm_radius.append(np.random.exponential(scale=Radio_s[i.month-1],size=1)[0])
 
-        print('Numero de tormentas ' +  str(n_storms) + ' para los meses ' + str(monthss))
+        print('Number of storms ' +  str(n_storms) + ' for the months ' + str(monthss))
         Number_cell_per_storm=list()
         for i, ii in enumerate(time_storm_origins):
             Number_cell_per_storm.append(1 + (np.random.poisson(Number_cells_per_storm[monthss[0]-1], 1)))
-        print('Numero de celdas de lluvia por tormenta ' + str(np.mean(Number_cell_per_storm)))
+        print('Number of rain cells per storm ' + str(np.mean(Number_cell_per_storm)))
 
         time0 = time_star
         time_ini_cells=list()
@@ -1041,15 +1068,18 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
             x_aux=XX[nunu]; y_aux=YY[nunu]
             celdas_mojan=list()
             for ccc in range(len(Intensidad_cells)):
-                if coordinates=='geographical':
+                if coordinates.lower()=='geographical':
                     #distancia_celda_grid= (haversine(x_aux, y_aux, x_cells[ccc], y_cells[ccc]))
-                    distancia_celda_grid = (haversine((y_aux, x_aux), (y_cells[ccc], x_cells[ccc])))
+                    distancia_celda_grid = (haversine((y_aux, x_aux), (y_cells[ccc], x_cells[ccc]), unit=Unit.KILOMETERS))
                     if radio_cells[ccc]  > distancia_celda_grid:
                         celdas_mojan.append(ccc)
-                else:
+                elif coordinates.lower()=='utm':
                     distancia_celda_grid=(distancia_f(x_aux, y_aux, x_cells[ccc], y_cells[ccc]))
                     if radio_cells[ccc]>distancia_celda_grid/1000:
                         celdas_mojan.append(ccc)
+                else:
+                    raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
+
 
             #zeros=np.zeros((len(Df_sim_join_min.index), 1))
             #aux_t=np.zeros((len(Df_sim_join_min.index), 1))
@@ -1079,9 +1109,15 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
 
                     for c in range(len(posi_celdas_tormenta)):
                         ##Veo si el pixel está dentro de la tormenta 
-                        distancia_celda_storm=(haversine((y_storms[s], x_storms[s]), \
-                                                         (y_cells_aux[posi_celdas_tormenta[c]],\
-                                                         x_cells_aux[posi_celdas_tormenta[c]])))
+                        if coordinates.lower()=='geographical':
+                            distancia_celda_storm=(haversine((y_storms[s], x_storms[s]), \
+                                                             (y_cells_aux[posi_celdas_tormenta[c]],\
+                                                             x_cells_aux[posi_celdas_tormenta[c]]), unit=Unit.KILOMETERS))
+                        elif coordinates.lower()=='utm':
+                            distancia_celda_storm=(distancia_f(x_cells_aux[s], x_storms[s], y_cells_aux[posi_celdas_tormenta[c]], y_storms[posi_celdas_tormenta[c]]))/1000
+                        else:
+                            raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
+
                         if Storm_radius[s]+radio_cells_aux[posi_celdas_tormenta[c]]>distancia_celda_storm:
                             time_ini_cells_aux_storm.append(time_ini_cells_aux[posi_celdas_tormenta[c]]);
                             time_fin_cells_aux_storm.append(time_fin_cells_aux[posi_celdas_tormenta[c]])

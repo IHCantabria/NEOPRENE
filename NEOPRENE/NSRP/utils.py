@@ -200,8 +200,9 @@ def disaggregate_rainfall(x_series, y_series):
     
     y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
     dti = pd.date_range(start=x_series.index[0], end=x_series.index[-1] + timedelta(hours=23), freq="H")
-    results=pd.DataFrame(index = dti, columns = ['Rain'])
-    
+    #results=pd.DataFrame(index = dti, columns = ['Rain'])
+    results=pd.DataFrame(index = dti, columns = y_series.columns)
+
     for n, date in enumerate(x_series.index[1:]):
         x_j=x_series.loc[date].values       
 
