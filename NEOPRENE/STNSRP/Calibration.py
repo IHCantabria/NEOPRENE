@@ -8,13 +8,13 @@ Library containing classes for calibrating model parameters.
     
 '''
 
-from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
-from NEOPRENE.STNSRP.utils import *
-from NEOPRENE.STNSRP.libs_STNSRP import *
+from STNSRP.MathematicalPropertiesSTNSRP import *
+from STNSRP.utils import *
+from STNSRP.libs_STNSRP import *
 import time
 import yaml
 import ast
-from NEOPRENE.STNSRP.parameters_calibration import parameters_calibration
+from STNSRP.parameters_calibration import parameters_calibration
 import sys
 
 class Calibration(object):
@@ -48,8 +48,6 @@ class Calibration(object):
             t=24
         else:
             t=1
-
-        print(self.hiperparams.time_between_storms)
             
         lim = np.array([
             [(1/self.hiperparams.time_between_storms[1])*t, (1/self.hiperparams.time_between_storms[0])*t],
@@ -232,7 +230,6 @@ class Calibration(object):
                 param_v.append(Fitted_parameters[7]); 
                 param_v.append(Fitted_parameters[8]); 
                 param_v.append(Fitted_parameters[9]);
-                print(param_v) 
                 Dataframe_params[prii]=param_v
                 
             elif self.hiperparams.process=='storms' and self.hiperparams.storm_radius==True:
@@ -249,6 +246,7 @@ class Calibration(object):
                 param_v.append(Fitted_parameters[8]); 
                 param_v.append(Fitted_parameters[9]); 
                 param_v.append(Fitted_parameters[10]); 
+                param_v.append(Fitted_parameters[11]); 
                 Dataframe_params[prii]=param_v
 
         #Dataframe_xi_months=XI_MONTHS(Datos_, Dataframe_params, self.hiperparams.process, self.hiperparams.Seasonality)#calculate scale parameter for every gauge
