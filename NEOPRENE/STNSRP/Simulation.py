@@ -9,12 +9,12 @@ Library containing classes for simulating time series from the model.
 
 
 
-from STNSRP.MathematicalPropertiesSTNSRP import *
-from STNSRP.utils import *
-from STNSRP.libs_STNSRP import *
-from STNSRP.inputs_simulation import *
-from STNSRP.outputs_simulation import *
-from STNSRP.Statistics import Statistics
+from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
+from NEOPRENE.STNSRP.utils import *
+from NEOPRENE.STNSRP.libs_STNSRP import *
+from NEOPRENE.STNSRP.inputs_simulation import *
+from NEOPRENE.STNSRP.outputs_simulation import *
+from NEOPRENE.STNSRP.Statistics import Statistics
 import time
 
 class Simulation(object):

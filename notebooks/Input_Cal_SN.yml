@@ -7,7 +7,7 @@ process: 'normal'
 statistics_name: ['var_1', 'var_2', 'var_3', 'var_4', 'autocorr_1_1', 'autocorr_2_1', 'autocorr_3_1', 'fih_1', 'fiWW_1', 'fiDD_1', 'M3_1', 'crosscorr_1', 'crosscorr_2'] #when crosscorr statistics is fitted it is mandatory include them at the end 
 weights: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 coordinates: 'UTM' #geographical/UTM
-storm_radius: False
+storm_radius: True
 number_iterations: 20
 number_bees: 1000
 time_between_storms: [20, 1000]

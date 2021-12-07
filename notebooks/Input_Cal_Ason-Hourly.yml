@@ -10,10 +10,10 @@ coordinates: 'geographical' #geographical/UTM
 storm_radius: False
 number_iterations: 40
 number_bees: 1000
-time_between_storms: [20, 5000]
+time_between_storms: [20, 1000]
 number_storm_cells: [2, 100]
-cell_duration:  [0.0015, 5]
-storm_cell_displacement: [1.01, 500]
+cell_duration:  [0.015, 5]
+storm_cell_displacement: [1.01, 100]
 cell_radius: [0.5, 10] #50, 100limits depend on the coordinates type (geographical or UTM). Note that  1/cell_radius units are in km. Divide cell_radius per 100 if coordinates are in UTM.
 storm_radius_p: [10, 40] #100, 5000limits depend on the coordinates type (geographical or UTM). Note that 1/storm_radius_p units are in km. Divide storm_radius_p per 100 if coordinates are in UTM.
 number_initializations: 1

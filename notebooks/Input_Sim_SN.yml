@@ -6,6 +6,6 @@ statistics_name: ['var_1', 'var_2', 'var_3', 'var_4', 'autocorr_1_1', 'autocorr_
 temporal_resolution: 'd'
 process: 'normal'
 coordinates: 'UTM' #geographical/UTM
-storm_radius: False
+storm_radius: True
 year_ini: 2020             
-year_fin: 2030      
+year_fin: 2080      

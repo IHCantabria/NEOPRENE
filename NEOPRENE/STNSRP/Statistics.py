@@ -11,7 +11,7 @@ The statistics are then used to calibrate the model parameters
 
 import sys
 #sys.path.insert(1, '/home/javi/Projects/STNSRPM_new/STNSRPM/')
-from STNSRP.libs_STNSRP import *
+from NEOPRENE.STNSRP.libs_STNSRP import *
 import numpy as np
 import pandas as pd
 

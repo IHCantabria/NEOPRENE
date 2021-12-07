@@ -11,9 +11,9 @@ Rectangular Pulses (NSRP).
 
 '''Functions of the NSRP mode'''
 
-from STNSRP.MathematicalPropertiesSTNSRP import *
-from STNSRP.utils import *
-import STNSRP.PSOMdJ as pso
+from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
+from NEOPRENE.STNSRP.utils import *
+import NEOPRENE.STNSRP.PSOMdJ as pso
 from haversine import haversine, Unit
 import numpy as np
 import pandas as pd
@@ -104,8 +104,6 @@ def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordi
         Data=time_series.copy()
         cross_corr=pd.DataFrame()
 
-        ##Calculo los meses que no estan del 1 al 12. Pongo nans a los meses en los que no quiero calcular los
-        ##estadísticos
         m_T=list()
         for n in np.arange(1, 13): 
             if not(np.sum(i==n)>=1): m_T.append(n)
@@ -118,11 +116,8 @@ def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordi
             for m_t in m_T:
                 Data_month[Data_month.index.month==m_t]=np.nan
                 
-        #h=int(cross_corr_h.split("_",3)[2])
         h=int(cross_corr_h.split("_")[1])
         aux_month=Data.resample(str(h) + temporal_resolution).agg(pd.Series.sum, min_count=1); 
-        #aux_month=Datos.resample(str(h) + temporal_resolution , how='sum')
-        #cross_corr_stationality_f.aa=aux_month
 
         cross_corr['dist'], cross_corr['cross_corr']=cross_correlation(Attributes, aux_month, func, 11, coordinates)
         
@@ -131,49 +126,39 @@ def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordi
     return cross_corr_stationality
 
 
-def cross_correlation(Estaciones, Series, funcion, divisions, coordinates):
-    Correlacion_espacial=pd.DataFrame(index=Series.columns, columns=Series.columns)
-    Distancia=pd.DataFrame(index=Series.columns, columns=Series.columns)
+def cross_correlation(Stations, Series, funcion, divisions, coordinates):
+    Spatial_correlation=pd.DataFrame(index=Series.columns, columns=Series.columns)
+    Distance=pd.DataFrame(index=Series.columns, columns=Series.columns)
 
-    for i, ii in enumerate(Correlacion_espacial.index):
-        x1=Estaciones[Estaciones['ID']==ii].X.values; x1=x1[0]
-        y1=Estaciones[Estaciones['ID']==ii].Y.values; y1=y1[0]
+    for i, ii in enumerate(Spatial_correlation.index):
+        x1=Stations[Stations['ID']==ii].X.values; x1=x1[0]
+        y1=Stations[Stations['ID']==ii].Y.values; y1=y1[0]
         data1=Series[ii].values
-        for j, jj, in enumerate(Correlacion_espacial.columns):
-            x2=Estaciones[Estaciones['ID']==jj].X.values; x2=x2[0]
-            y2=Estaciones[Estaciones['ID']==jj].Y.values; y2=y2[0]
+        for j, jj, in enumerate(Spatial_correlation.columns):
+            x2=Stations[Stations['ID']==jj].X.values; x2=x2[0]
+            y2=Stations[Stations['ID']==jj].Y.values; y2=y2[0]
             datos2=Series[jj].values
             if (coordinates.lower()=='geographical'):
-                Distancia[ii][jj]=haversine((y1, x1), (y2, x2), unit=Unit.KILOMETERS)
+                Distance[ii][jj]=haversine((y1, x1), (y2, x2), unit=Unit.KILOMETERS)
             elif coordinates.lower()=='utm':
-                Distancia[ii][jj]=distancia_f(x1, y1, x2, y2)/1000
+                Distance[ii][jj]=distance_f(x1, y1, x2, y2)/1000
             else:
                 raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
 
                 
             pos_no_nans=np.intersect1d(np.where(~np.isnan(Series[ii].values)), np.where(~np.isnan(Series[jj].values)))
             corr_s=stats.pearsonr(Series[ii].values[pos_no_nans], Series[jj].values[pos_no_nans])
-            Correlacion_espacial[ii][jj]=corr_s[0]
+            Spatial_correlation[ii][jj]=corr_s[0]
 
     Correlacion_distancia=pd.DataFrame()
-    Correlacion_distancia['Corr']=np.reshape(Correlacion_espacial.values, np.size(Correlacion_espacial.values))
-    Correlacion_distancia['dist']=np.reshape(Distancia.values, np.size(Distancia.values))
+    Correlacion_distancia['Corr']=np.reshape(Spatial_correlation.values, np.size(Spatial_correlation.values))
+    Correlacion_distancia['dist']=np.reshape(Distance.values, np.size(Distance.values))
     
     ##Quito los repetidos (solo me quedo con una parte de la diagonal)
     Correlacion_distancia=pd.DataFrame(np.vstack({tuple(row) for row in Correlacion_distancia.values}), columns=['Corr', 'dist'])
     ##Quito filas = nan
     Correlacion_distancia = Correlacion_distancia[np.isfinite(Correlacion_distancia['Corr'])]
 
-    #fig= plt.figure(figsize=(20,8))
-    #plt.plot(Correlacion_distancia['dist'], Correlacion_distancia['Corr'].values, '.r')
-    #legnd = ['', 'Correlacion media']
-    #plt.ylabel('correlation')
-    #plt.xlabel('distance[km]')
-    #plt.title('Spatial Correlation funtion')   
-
-    #print(Correlacion_distancia) 
-    
-    ##Divido en 10 tramos y calculo la correlación espacial media en esa distancia
     tramos=np.linspace(0, Correlacion_distancia['dist'].max(), divisions)#divisions=11
     puntos_medios=(tramos[1:] + tramos[:-1]) / 2
     Correlacion_media=list()
@@ -338,7 +323,7 @@ class evaluateInd_PSO(object):
                 for i, ii in enumerate(pos):
                     cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_correlacion_espacial=list()
+                    e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
                         w1=1; l=0
                         #h=int(self.s[ii].split("_",3)[2])
@@ -347,7 +332,7 @@ class evaluateInd_PSO(object):
                         a=NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d)\
                         /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                         e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
-                        e_correlacion_espacial.append(e_aux)
+                        e_spatial_correlation.append(e_aux)
                         d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
 
         if self.storm_radius==True:
@@ -356,7 +341,7 @@ class evaluateInd_PSO(object):
                 for i, ii in enumerate(pos):
                     cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_correlacion_espacial=list()
+                    e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
                         w1=1; l=0
                         #h=int(self.s[ii].split("_",3)[2])
@@ -366,7 +351,7 @@ class evaluateInd_PSO(object):
                                                                        fi_may, d, fi_may_s)\
                         /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                         e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
-                        e_correlacion_espacial.append(e_aux)
+                        e_spatial_correlation.append(e_aux)
                         d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
         
         for k in d_e.keys():
@@ -460,7 +445,7 @@ class evaluateInd_PSO(object):
                 for i, ii in enumerate(pos):
                     cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_correlacion_espacial=list()
+                    e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
                         w1=1; l=0
                         #h=int(self.s[ii].split("_",3)[2])
@@ -469,7 +454,7 @@ class evaluateInd_PSO(object):
                         a=NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d)\
                         /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                         e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
-                        e_correlacion_espacial.append(e_aux)
+                        e_spatial_correlation.append(e_aux)
                         d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
         if self.storm_radius==True:
             if np.sum(['cross' in i for i in self.s])>=1:#Quiere decir que hay que ajustar ese estadístico
@@ -477,7 +462,7 @@ class evaluateInd_PSO(object):
                 for i, ii in enumerate(pos):
                     cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_correlacion_espacial=list()
+                    e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
                         w1=1; l=0
                         #h=int(self.s[ii].split("_",3)[2])
@@ -487,7 +472,7 @@ class evaluateInd_PSO(object):
                                                                        fi_may, d, fi_may_s)\
                         /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                         e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
-                        e_correlacion_espacial.append(e_aux)
+                        e_spatial_correlation.append(e_aux)
                         d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
         
         for k in d_e.keys():
@@ -574,7 +559,7 @@ class evaluateInd_PSO(object):
                 for i, ii in enumerate(pos):
                     cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_correlacion_espacial=list()
+                    e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
                         w1=1; l=0
                         #h=int(self.s[ii].split("_",3)[2])
@@ -589,7 +574,7 @@ class evaluateInd_PSO(object):
                 for i, ii in enumerate(pos):
                     cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_correlacion_espacial=list()
+                    e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
                         w1=1; l=0
                         #h=int(self.s[ii].split("_",3)[2])
@@ -757,7 +742,7 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
 
 from shapely.geometry import Point
 from shapely.geometry import Polygon
-#from descartes.patch import PolygonPatch
+
 def mean_area_intersect_rectangle_circle(x_lim, y_lim, radius, plott):
     ##Calculo el aréa media que intersecta un rectangulo (fijo) y un circulo cuyo centro se va moviendo a lo largo
     ## del rectangulo (Sería integrar entre x e y. pero lo hago numericamente)
@@ -778,8 +763,8 @@ def mean_area_intersect_rectangle_circle(x_lim, y_lim, radius, plott):
     
     area_medio=list()
     for i in range(len(XX_reshape)):
-        circle=Point(XX_reshape[i],YY_reshape[i]).buffer(radius)##creo circulo
-        diferencia=rectangle.intersection(circle)##calculo intersección
+        circle=Point(XX_reshape[i],YY_reshape[i]).buffer(radius)
+        diferencia=rectangle.intersection(circle)
         
         if plott=='True':
         
@@ -793,11 +778,8 @@ def mean_area_intersect_rectangle_circle(x_lim, y_lim, radius, plott):
             xrange = [-1, 5]
             yrange = [-1, 5]
             ax.set_xlim(*xrange)
-            #ax.set_xticks(range(*xrange) + [xrange[-1]])
             ax.set_ylim(*yrange)
-            #ax.set_yticks(range(*yrange) + [yrange[-1]])
-            #ax.set_aspect(1)
-
+            
             # 2: intersection
             ax = fig.add_subplot(122)
             patch = PolygonPatch(diferencia, facecolor='g', edgecolor='g', alpha=0.5, zorder=2)
@@ -805,15 +787,13 @@ def mean_area_intersect_rectangle_circle(x_lim, y_lim, radius, plott):
             xrange = [-1, 5]
             yrange = [-1, 5]
             ax.set_xlim(*xrange)
-            #ax.set_xticks(range(*xrange) + [xrange[-1]])
             ax.set_ylim(*yrange)
-            #ax.set_yticks(range(*yrange) + [yrange[-1]])
-            #ax.set_aspect(1)
+
         
         area_medio.append(diferencia.area)
     return (np.mean(area_medio))
 
-def distancia_f(x1, y1, x2, y2):
+def distance_f(x1, y1, x2, y2):
     dist=(((x1-x2)**2) + ((y1-y2)**2))**0.5
     return dist
 
@@ -864,8 +844,8 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
 
 
     if coordinates.lower() == 'utm':
-        Distnacia_xx_cuadrado_km=distancia_f(P1[0], P1[1], P2[0], P2[1])/1000; #print(Distnacia_xx_cuadrado_km)
-        Distnacia_yy_cuadrado_km=distancia_f(P1[0], P1[1], P4[0], P4[1])/1000; #print(Distnacia_yy_cuadrado_km)
+        Distnacia_xx_cuadrado_km=distance_f(P1[0], P1[1], P2[0], P2[1])/1000; #print(Distnacia_xx_cuadrado_km)
+        Distnacia_yy_cuadrado_km=distance_f(P1[0], P1[1], P4[0], P4[1])/1000; #print(Distnacia_yy_cuadrado_km)
     elif coordinates.lower() == 'geographical':
         Distnacia_xx_cuadrado_km=haversine((P1[1], P1[0]), (P2[1], P2[0]), unit=Unit.KILOMETERS); #print(Distnacia_xx_cuadrado_km)
         Distnacia_yy_cuadrado_km=haversine((P1[1], P1[0]), (P4[1], P4[0]), unit=Unit.KILOMETERS); #print(Distnacia_yy_cuadrado_km)
@@ -1074,7 +1054,7 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
                     if radio_cells[ccc]  > distancia_celda_grid:
                         celdas_mojan.append(ccc)
                 elif coordinates.lower()=='utm':
-                    distancia_celda_grid=(distancia_f(x_aux, y_aux, x_cells[ccc], y_cells[ccc]))
+                    distancia_celda_grid=(distance_f(x_aux, y_aux, x_cells[ccc], y_cells[ccc]))
                     if radio_cells[ccc]>distancia_celda_grid/1000:
                         celdas_mojan.append(ccc)
                 else:
@@ -1114,7 +1094,7 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
                                                              (y_cells_aux[posi_celdas_tormenta[c]],\
                                                              x_cells_aux[posi_celdas_tormenta[c]]), unit=Unit.KILOMETERS))
                         elif coordinates.lower()=='utm':
-                            distancia_celda_storm=(distancia_f(x_cells_aux[s], x_storms[s], y_cells_aux[posi_celdas_tormenta[c]], y_storms[posi_celdas_tormenta[c]]))/1000
+                            distancia_celda_storm=(distance_f(x_storms[s], y_storms[s], x_cells_aux[posi_celdas_tormenta[c]], y_cells_aux[posi_celdas_tormenta[c]]))/1000
                         else:
                             raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
 
@@ -1164,6 +1144,7 @@ def STNSRP_simulation(Params_month,Dataframe_xi , XX, YY, year_ini, year_fin, te
             t_ordinal= pd.PeriodIndex(t.astype(str),freq='N').astype(np.int32)
 
             rainfall = interp1d(t_ordinal, rain, kind="zero", bounds_error=False, fill_value=0.)
+            
 
             rrain = rainfall(tt_ordinal)
 

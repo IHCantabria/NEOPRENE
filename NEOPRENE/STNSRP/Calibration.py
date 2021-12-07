@@ -8,13 +8,13 @@ Library containing classes for calibrating model parameters.
     
 '''
 
-from STNSRP.MathematicalPropertiesSTNSRP import *
-from STNSRP.utils import *
-from STNSRP.libs_STNSRP import *
+from NEOPRENE.STNSRP.MathematicalPropertiesSTNSRP import *
+from NEOPRENE.STNSRP.utils import *
+from NEOPRENE.STNSRP.libs_STNSRP import *
 import time
 import yaml
 import ast
-from STNSRP.parameters_calibration import parameters_calibration
+from NEOPRENE.STNSRP.parameters_calibration import parameters_calibration
 import sys
 
 class Calibration(object):
@@ -248,10 +248,8 @@ class Calibration(object):
                 param_v.append(Fitted_parameters[10]); 
                 param_v.append(Fitted_parameters[11]); 
                 Dataframe_params[prii]=param_v
-
-        #Dataframe_xi_months=XI_MONTHS(Datos_, Dataframe_params, self.hiperparams.process, self.hiperparams.Seasonality)#calculate scale parameter for every gauge
         
-        Dataframe_xi_months = XI_MONTHS(time_series, Dataframe_params, self.hiperparams.process)
+        Dataframe_xi_months = XI_MONTHS(time_series, Dataframe_params, self.hiperparams.process) #calculate scale parameter for every gauge
 
         resuls = parameters_calibration(Dataframe_params,statistics_dataframe_fit, crosscorr_dataframe_fit, self.statistics_dataframe, self.crosscorr_dataframe, Error_dataframe, Dataframe_xi_months)
         

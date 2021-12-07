@@ -119,12 +119,7 @@ class Calibration(object):
                 st = i.split('_')[0]+'_'+'h'
                 if st not in statistic_list:
                     raise Exception ('The '+i+' statistic has not been correctly defined.')
-        
-            
-            
-            
-        
-        
+           
         
 class Simulation(object): 
     """This function allows to obtain the hyperparameters to start the simulation of the spatio-temporal model and to check if all parameters are correct.
