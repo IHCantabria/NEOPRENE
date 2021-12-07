@@ -27,7 +27,9 @@ class Calibration(object):
     """
     def __init__(self,hiperparams):
         self.hiperparams = hiperparams
+        
     def __call__(self, statistics, verbose=False):
+        
         """Starting from the general hyperparameters of the model and different real statistics, the calibration of the point model begins.
         
         Parameters

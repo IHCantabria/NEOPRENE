@@ -404,9 +404,12 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
         for i, ii in enumerate(time_fin_cells):
             aux=ii; year_aux=aux.year
             Anhos.append(year_aux)
+            
         In_datess=np.where(np.array(Anhos)<=Df_sim_day_aux.year[-1])
+        
         time_ini_cellss=time_ini_cells[In_datess[0]]
         time_fin_cellss=time_fin_cells[In_datess[0]]
+        
         Intensity_cellss=Intensity_cells[In_datess[0]]; Intensity_cells_total.append(Intensity_cellss)
         Time_hours_cellss=Time_hours_cells[In_datess[0]]; Time_cells_total.append(Time_hours_cellss)
         
@@ -415,7 +418,7 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
             i_ini = np.hstack([Intensity_cellss.T, -Intensity_cellss.T])
             i_ini = i_ini[0]
         else: 
-            i_ini = np.hstack([Intensity_cellss, -Intensity_cellss])
+            i_ini = np.hstack([Intensity_cellss.T, -Intensity_cellss.T])
         orden = np.argsort(t_ini)
         t = t_ini[orden]
         i = np.cumsum(i_ini[orden])
@@ -434,6 +437,7 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
                 Date['Rain']=rr/(60)
             df = Date.copy()
             del Date
+            
             df2 = pd.DataFrame(df.groupby([df.index.year,df.index.month,df.index.day])[['Rain']].sum().values,index = pd.period_range(start=df.index[0],end=df.index[-1],freq='D'))
             df3 = pd.DataFrame(df.groupby([df.index.year,df.index.month,df.index.day,df.index.hour])[['Rain']].sum().values,index = pd.period_range(start=df.index[0],end=df.index[-1],freq='h'))
 

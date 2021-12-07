@@ -1,3 +1,11 @@
+'''
+Library to perform Particle Swarm Optimization.
+
+	Authors: 
+        + Manuel del Jesus
+    
+'''
+
 import numpy as np
 
 class Worker(object):
@@ -47,7 +55,7 @@ class Worker_max(Worker):
         self.fvalue = None
 
 class Swarm(object):
-    def __init__(self, D, limits, n, F, optimum):
+    def __init__(self, D, limits, n, F, optimum, verbose=False):
         self._D = D
         self._limits = limits
         self._inf = limits[:,0]
@@ -66,7 +74,8 @@ class Swarm(object):
         elif optimum=='max':
             self._best = np.max(self._bestList)
             self._best_position = self._workers[np.argmax(self._bestList)]._best_position.copy()
-        print("Initial best position ", self._best, self._best_position)
+        if verbose:
+            print("Initial best position ", self._best, self._best_position)
 
     def getBest(self):
         #print("Best value : %6.5e"%self._best, end=" ")
