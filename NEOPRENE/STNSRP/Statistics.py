@@ -14,18 +14,36 @@ import sys
 from NEOPRENE.STNSRP.libs_STNSRP import *
 import numpy as np
 import pandas as pd
+import os
 
 
-def statistics_from_file(statistics_name, Seasonality_str, Seasonality, temporal_resolution, file):
-    statististics_dataframe=pd.DataFrame(index=statistics_name,columns=Seasonality_str)
+def statistics_from_file(statistics_name, Seasonality_str, Seasonality, temporal_resolution, files_folder):
+    
+    statistics_gauges={}
+    
+    crosscorr = list()
+    for st in statistics_name:
+        if 'crosscorr' in st:
+            crosscorr.append(st)
             
-    statistics_external = pd.read_csv(file,index_col=0)
-    statistics_external.columns = Seasonality
-            
-    for pri, prii in enumerate(Seasonality):
-        statististics_values_real=statistics_external.iloc[:,pri].values
-        statististics_dataframe.loc[:,str(prii)]=statististics_values_real
-    return statististics_dataframe
+    cross_corr_gauges={ccorr: {} for ccorr in crosscorr}
+    
+    
+    files = os.listdir(files_folder)
+    for sea in Seasonality:
+        for file in files:
+            if str(sea) in file and 'statististics' in file:
+                stats = pd.read_csv(files_folder+file,index_col = 0)
+                statistics_gauges[sea] = stats
+                
+    for cr in crosscorr:
+        for sea in Seasonality:
+            for file in files:
+                if str(sea) in file and cr in file:
+                    stats = pd.read_csv(files_folder+file,index_col = 0)
+                    cross_corr_gauges[cr][sea] = stats
+                    
+    return statistics_gauges, cross_corr_gauges
     
 def statistics_from_serie(statistics_name, Seasonality_str, Seasonality, temporal_resolution, time_series):
     
@@ -114,7 +132,7 @@ class Statistics (object):
     statististics_dataframe : Dataframe with calculated statistics. 
     crosscorr_dataframe : Dataframe with cross correlation.
     """
-    def __init__(self, hiperparams, time_series=None, file=None, attributes=None):
+    def __init__(self, hiperparams, time_series=None, files_folder=None, attributes=None):
     
         statistics_name     = hiperparams.statistics_name
         Seasonality_str     = hiperparams.Seasonality_str
@@ -122,7 +140,7 @@ class Statistics (object):
         temporal_resolution = hiperparams.temporal_resolution
         coordinates         = hiperparams.coordinates
             
-        if type(time_series)!=type(None) and file != None:
+        if type(time_series)!=type(None) and files_folder != None:
             raise Exception ('It is not possible to enter two types of data')
         if type(time_series)!=type(None) and type(attributes)!=type(None):
             if all(time_series.columns!=attributes.ID):
@@ -133,7 +151,7 @@ class Statistics (object):
                 self.statistics_dataframe   = change_statistics_dic_order(statististics_dataframe_dic, Seasonality)
                 self.crosscorr_dataframe    = cross_corr(statistics_name,Seasonality,temporal_resolution, time_series, attributes, func, coordinates)
 
-        elif file != None:
-            self.statististics_dataframe = statistics_from_file(statistics_name,Seasonality_str,Seasonality,temporal_resolution, file)
+        elif files_folder != None:
+            [self.statististics_dataframe, self.crosscorr_dataframe] = statistics_from_file(statistics_name,Seasonality_str,Seasonality,temporal_resolution, files_folder)
         else:
             raise Exception
