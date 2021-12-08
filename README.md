@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/409946207.svg)](https://zenodo.org/badge/latestdoi/409946207)
 
-The **NEOPRENE** library implements a rectangular pulses model for rainfall emulation based on the Neyman-Scott process. The emulator may be used to generate synthetic rainfall time series that reproduce observed statistics at different temporal aggregations. It has been designed with rainfall dissaggregation and extreme rainfall analysis in mind.
+The **NEOPRENE** library implements a rectangular pulses model for rainfall emulation based on the Neyman-Scott process. The emulator may be used to generate multi-site synthetic rainfall time series that reproduce observed statistics at different temporal aggregations. It has been designed with rainfall dissaggregation and extreme rainfall analysis in mind.
 
 The description of the Neyman-Scott Process -or Spatio-temporal Neyman-Scott Rectangular Pulses Model- can be found in the [doc folder](https://github.com/IHCantabria/NEOPRENE/tree/main/doc).
 
@@ -18,7 +18,7 @@ Other papers by the authors where -previous incarnations of- the **NEOPRENE** li
 | Directory | Contents |
 | :-------- | :------- |
 |  [NSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/NSRP) | Python code to calibrate the NSRPM (Neyman-Scott Rectangular Pulse Model) and simulate synthetic rainfall series.
-|  [STNSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/STNSRP) | Python code for calibrate the STNSRPM (Spatio-Temporal Neyman-Scott Rectangular Pulse Model) and simulate multisite rainfall series (in progress).
+|  [STNSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/STNSRP) | Python code for calibrate the STNSRPM (Spatio-Temporal Neyman-Scott Rectangular Pulse Model) and simulate multi-site rainfall series.
 | [doc](https://github.com/IHCantabria/NEOPRENE/tree/main/doc) | Description of the model.
 | [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) |  Jupyter notebooks with examples on how to calibrate, simulate and validate a Neyman-Scott model using the library. Examples on how to perform a daily-to-hourly rainfall disaggregation using the synthetic series is also included.
 
@@ -38,7 +38,7 @@ Examples of use of the `NEOPRENE` library are available in the form of [jupyter 
 
 1. Download the folder [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) from the github repository, or navigate to the folder should you have cloned the repo.
 2. Open jupyter notebook of Jupyter Lab (type `jupyter notebook` or `jupyter lab`  in the terminal)
-3. Open one of the tests available in the [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) folder with jupyter notebook  (e.g. [NSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/NSRP_test.ipynb))
+3. Open one of the tests available in the [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) folder with jupyter notebook  (e.g. [NSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/NSRP_test.ipynb), [STNSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/STNSRP_test.ipynb))
 
 ## Errata and problem reporting
 
@@ -48,7 +48,7 @@ To report an issue with the library, please fill a GitHub issue.
 
 The original version of the library was developed by:
 
-+ Javier Díez-Sierra
++ Javier Diez-Sierra
 + Salvador Navas
 + Manuel del Jesus
 
