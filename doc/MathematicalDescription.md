@@ -1,16 +1,16 @@
-# The Neyman-Scott Rectangular Pulses Model
+# The Space-Time Neyman-Scott Rectangular Pulses Model
 
 ## Statistical properties of the rainfall model
 
-The rainfall model used in this library is an extension of the model known as the Neyman-Scott Rectangular Pulse Model (NSRPM) and allows the superposition of several independent point processes [1, 2, 3].
+The rainfall model used in this library is an extension of the model known as the Space-Time Neyman-Scott Rectangular Pulse Model (STNSRPM) and allows the superposition of several independent point processes [1, 2, 3].
 
-The origin of the storms follows a Poisson process with parameter &lambda;.  Associated with each storm there is a random number of rain cells &upsilon; that present a delay with respect to the origin of the storm that follows an exponential distribution of parameter &beta;. The duration and intensity of each rain cell also follow an exponential distribution with parameters &epsilon; and &chi; (scale parameters), respectively. The intensity of each rain cell is constant for as long as it remains active. The intensity of rain at any instant is made up of the sum of the intensities of the active cells at that same instant of time. The duration, intensity and waiting time between a storm and each rain cell are assumed to be independent [4]. A scheme of the model is shown in the following figure.
+The origin of the storms follows a Poisson process with parameter &lambda;.  Associated with each storm there is a random number of rain cells &upsilon; that present a delay with respect to the origin of the storm that follows an exponential distribution of parameter &beta;. The duration, intensity and the radius of each rain cell also follow an exponential distribution with parameters &epsilon; &chi; (scale parameters) and &phi;, respectively. The intensity of each rain cell is constant for as long as it remains active. The intensity of rain at any instant and position is made up of the sum of the intensities of the active cells at that same instant of time in this position. The duration, intensity and waiting time between a storm and each rain cell are assumed to be independent [4]. A scheme of the sigle-site model is shown in the following figure.
 
 ![Model scheme](ModelScheme.png)
 
-The version of the NSRPM model implemented in this repository can include a maximum of two independent superposed storm generators in order to better adjust to the different types of storms (e.g. convective and frontal rain); which leads us to a model with a maximum of 10 parameters (&lambda;, &upsilon;, &beta;, &epsilon; and &chi; for each type of storm).
+The version of both the NSRPM and STNSRPM model implemented in this repository can include a maximum of two independent superposed storm generators in order to better adjust to the different types of storms (e.g. convective and frontal rain); which leads us to a model with a maximum of 10 parameters (&lambda;, &upsilon;, &beta;, &epsilon; and &chi; for each type of storm) for the NSRPM and 12 parameters (&lambda;, &upsilon;, &beta;, &epsilon; &chi; and %phi; for each type of storm) for the STNSRPM. Furthermore, the STNSRPM allows the inclusion of the storm radius parameter (&phi;_s) which helps to reproduce the observed cross-correlation when working in large basins [2].
 
-The statistical properties of the model were derived from [1, 5, 2, 6].
+The statistical properties of the model were derived from [1, 5, 2, 3, 6].
 
 ## Further Developments
 
@@ -18,7 +18,9 @@ The model implemented in this repository will be extended to:
 
 1. work with sub-hourly temporal aggregations.
 
-2. to adjust and simulate the spatial correlation by means of two new parameters (cell radius and storm radius) [3, 2]. It will allow users calibrate and simulate multisite synthetic rainfall series which mimic the observed one.
+2. create virtual series in those locations chosen by the users.
+
+3. include raster input.
 
 ## References
 
