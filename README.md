@@ -4,7 +4,7 @@
 
 The **NEOPRENE** library implements a rectangular pulses model for rainfall emulation based on the Neyman-Scott process. The emulator may be used to generate multi-site synthetic rainfall time series that reproduce observed statistics at different temporal aggregations. It has been designed with rainfall dissaggregation and extreme rainfall analysis in mind.
 
-The description of the Neyman-Scott Process -or Spatio-temporal Neyman-Scott Rectangular Pulses Model- can be found in the [doc folder](https://github.com/IHCantabria/NEOPRENE/tree/main/doc).
+The description of the Neyman-Scott Process -or Space-time Neyman-Scott Rectangular Pulses Model- can be found in the [doc folder](https://github.com/IHCantabria/NEOPRENE/tree/main/doc).
 
 A paper describing the library has been sent for review to _Environmental Modelling & Software_.
 
@@ -18,7 +18,7 @@ Other papers by the authors where -previous incarnations of- the **NEOPRENE** li
 | Directory | Contents |
 | :-------- | :------- |
 |  [NSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/NSRP) | Python code to calibrate the NSRPM (Neyman-Scott Rectangular Pulse Model) and simulate synthetic rainfall series.
-|  [STNSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/STNSRP) | Python code for calibrate the STNSRPM (Spatio-Temporal Neyman-Scott Rectangular Pulse Model) and simulate multi-site rainfall series.
+|  [STNSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/STNSRP) | Python code for calibrate the STNSRPM (Space-Time Neyman-Scott Rectangular Pulse Model) and simulate multi-site rainfall series.
 | [doc](https://github.com/IHCantabria/NEOPRENE/tree/main/doc) | Description of the model.
 | [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) |  Jupyter notebooks with examples on how to calibrate, simulate and validate a Neyman-Scott model using the library. Examples on how to perform a daily-to-hourly rainfall disaggregation using the synthetic series is also included.
 
