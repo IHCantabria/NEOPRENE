@@ -99,10 +99,22 @@ def IDW_f(xx, yy, zz, x, y, betha):
     return np.sum(zz*weights)
 
 def compare_statistics(CAL, SIM):
-    
-    stats_obs=allmonths(CAL.statististics_Real)
-    stats_fit=allmonths(CAL.statististics_Fit)
-    stats_sim=allmonths(SIM.statististics_Simulated)
+
+    dataframe_statististics_obs = pd.DataFrame(index = CAL.statististics_Fit.index)
+    dataframe_statististics_fit = pd.DataFrame(index = CAL.statististics_Fit.index)
+    dataframe_statististics_sim = pd.DataFrame(index = CAL.statististics_Fit.index)
+
+    for season in CAL.statististics_Real:
+        aux_season_obs = CAL.statististics_Real[season]
+        aux_season_fit = CAL.statististics_Fit[str(season)]
+        aux_season_sim = SIM.statististics_Simulated[season]
+        dataframe_statististics_obs[season] = aux_season_obs.mean(axis=1)
+        dataframe_statististics_fit[season] = aux_season_fit
+        dataframe_statististics_sim[season] = aux_season_sim.mean(axis=1)
+        
+    stats_obs=allmonths(dataframe_statististics_obs)
+    stats_fit=allmonths(dataframe_statististics_fit)
+    stats_sim=allmonths(dataframe_statististics_sim)
     
     RK=int(np.ceil(np.sqrt(len(stats_obs.index)))); 
     if len(stats_obs.index) % RK == 0:
@@ -180,7 +192,8 @@ def disaggregate_rainfall(x_series, y_series):
     
     y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
     dti = pd.date_range(start=x_series.index[0], end=x_series.index[-1] + timedelta(hours=23), freq="H")
-    results=pd.DataFrame(index = dti, columns = ['Rain'])
+    #results=pd.DataFrame(index = dti, columns = ['Rain'])
+    results=pd.DataFrame(index = dti, columns = y_series.columns)
     
     for n, date in enumerate(x_series.index[1:]):
         x_j=x_series.loc[date].values       

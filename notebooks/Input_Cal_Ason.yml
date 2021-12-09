@@ -3,7 +3,7 @@
 Seasonality_type: 'seasonal'
 Seasonality_user:  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 temporal_resolution: 'd'
-process: 'storms'
+process: 'normal'
 statistics_name: ['var_1', 'var_2', 'var_3', 'var_4', 'autocorr_1_1', 'autocorr_2_1', 'autocorr_3_1', 'fih_1', 'fiWW_1', 'fiDD_1', 'M3_1', 'crosscorr_1', 'crosscorr_2'] #when crosscorr statistics is fitted it is mandatory include them at the end 
 weights: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 coordinates: 'geographical' #geographical/UTM

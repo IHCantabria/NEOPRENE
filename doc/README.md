@@ -189,7 +189,8 @@ If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott 
   process = 'normal' # Only one type of storm is considered
   process = 'storms' # Convective and Frontal storm are considered
   ```
-  
+ If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott Rectangular Pulse Model) and simulate multi-site rainfall series is being used, the calibration parameters that need to be configured are as follows:
+ 
 + **coordinates:** ```strings``` defining the type of coordinates to which the location of the stations is referenced. It can be in **geographical** or **UTM** coordinates.
 
   ```python
