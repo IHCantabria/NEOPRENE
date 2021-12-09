@@ -157,7 +157,7 @@ If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott 
   + _Monthly calibration_: The library fits a different set of parameters for each month of the time series.
   + _Seasonality_user_: The user can define a seasonality different from the previous groups.
   
-+ **Seasonality_user: ** if the seasonality is set to _user_defined, the desired seasonality must be defined in this section.
++ **Seasonality_user:** if the seasonality is set to _user_defined, the desired seasonality must be defined in this section.
     ```python
     ['(1, 2, 3, 4, 5, 6)','(7, 8, 9, 10, 11, 12)']
     ```
