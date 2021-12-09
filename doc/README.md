@@ -32,13 +32,13 @@ The calibration parameters are entered in the yml file. The configuration of eac
 
 + **Data:** Pandas ```DataFrame``` that contains the original time series that is to be emulated using **NEOPRENE**.
 
-+ **Seasonality: **  Python ```list``` that configures the desired seasonality for the model. Calibration can be done in a monthly basis, by season or by year. In the calibration hyperparameters file the seasonality type is defined within the Seasonality_type field. This can be annual, seasonal, montly or user_defined. If the seasonality is user_defined it is necessary to enter in the Seasonality_user field the seasonality of the user's choice.
++ **Seasonality:**  Python ```list``` that configures the desired seasonality for the model. Calibration can be done in a monthly basis, by season or by year. In the calibration hyperparameters file the seasonality type is defined within the Seasonality_type field. This can be annual, seasonal, montly or user_defined. If the seasonality is user_defined it is necessary to enter in the Seasonality_user field the seasonality of the user's choice.
   + _annual_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
   + _seasonal_: The library merges the different months into the prescribed groups, fitting a different set of parameters per group.
   + _monthly_: The library fits a different set of parameters for each month of the time series.
   + _user_defined_: The user can define a seasonality different from the previous groups.
   
-+ **Seasonality_user: ** if the seasonality is set to _user_defined, the desired seasonality must be defined in this section.
++ **Seasonality_user:** if the seasonality is set to _user_defined, the desired seasonality must be defined in this section.
     ```python
     ['(1, 2, 3, 4, 5, 6)','(7, 8, 9, 10, 11, 12)']
     ```
