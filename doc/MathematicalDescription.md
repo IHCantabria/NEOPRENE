@@ -16,11 +16,13 @@ The statistical properties of the model were derived from [1, 5, 2, 3, 6].
 
 The model implemented in this repository will be extended to:
 
-1. work with sub-hourly temporal aggregations.
+1. smooth the parameters across the different seasons of the year. 
 
-2. create virtual series in those locations chosen by the users.
+2. work with sub-hourly temporal aggregations.
 
-3. include raster input.
+3. create virtual series in those locations chosen by the users.
+
+4. include raster input.
 
 ## References
 
