@@ -28,45 +28,20 @@ Currently, the library can only represent rainfall at a given point. The basic m
    3. The cell rainfall intensity that follow an **Exponential** process of parameter &chi; measured in hours per milimeter.
 
 ## Calibration hyperparameters
+The calibration parameters are entered in the yml file. The configuration of each of the parameters that need to be filled in the yml file, in the example you can see how it is configured [Input_Cal_Ason.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_Ason.yml). The configuration of each of the parameters that need to be filled in the yml file is explained below. 
 
 + **Data:** Pandas ```DataFrame``` that contains the original time series that is to be emulated using **NEOPRENE**.
 
-+ **Seasonality:** Python ```list``` that configures the desired seasonality for the model. Calibration can be done in a monthly basis, by season or by year.
-  + _Anual calibraton_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
-
-    ```python
-    Seasonality=list()
-    Seasonality.append((1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11, 12))
-    ```
-
-  + _Seasonal calibraton_: The library merges the different months into the prescribed groups, fitting a different set of parameters per group.
++ **Seasonality: **  Python ```list``` that configures the desired seasonality for the model. Calibration can be done in a monthly basis, by season or by year. In the calibration hyperparameters file the seasonality type is defined within the Seasonality_type field. This can be annual, seasonal, montly or user_defined. If the seasonality is user_defined it is necessary to enter in the Seasonality_user field the seasonality of the user's choice.
+  + _annual_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
+  + _seasonal_: The library merges the different months into the prescribed groups, fitting a different set of parameters per group.
+  + _monthly_: The library fits a different set of parameters for each month of the time series.
+  + _user_defined_: The user can define a seasonality different from the previous groups.
   
++ **Seasonality_user: ** if the seasonality is set to _user_defined, the desired seasonality must be defined in this section.
     ```python
-    Seasonality=list()
-    Seasonality.append((1, 2, 3))
-    Seasonality.append((4, 5, 6))
-    Seasonality.append((7, 8, 9))
-    Seasonality.append((10, 11, 12))
+    ['(1, 2, 3, 4, 5, 6)','(7, 8, 9, 10, 11, 12)']
     ```
-
-  + _Monthly calibration_: The library fits a different set of parameters for each month of the time series.
-  
-    ```python
-    Seasonality=list()
-    Seasonality.append((1))
-    Seasonality.append((2))
-    Seasonality.append((3))
-    Seasonality.append((4))
-    Seasonality.append((5))
-    Seasonality.append((6))
-    Seasonality.append((7))
-    Seasonality.append((8))
-    Seasonality.append((9))
-    Seasonality.append((10))
-    Seasonality.append((11))
-    Seasonality.append((12))
-    ```
-
 + **temporal_resolution:** ```string``` specifying the temporal resolution of the time series provided to the calibration process.
 
     ```python
@@ -81,13 +56,7 @@ Currently, the library can only represent rainfall at a given point. The basic m
   process = 'storms' # Convective and Frontal storm are considered
   ```
 
-+ **Intensity_function:** ```string``` that configures the distribution used for the rainfall intensity. Currently, only exponential distributions are considered.
-
-  ```python  
-  Intensity_function = 'E'
-  ```
-
-+ **statistics:** ```list``` of ```strings``` that contain the statistics that have to be considered during the fitting process. The statistics included are:
++ **statistics_name:** ```list``` of ```strings``` that contain the statistics that have to be considered during the fitting process. The statistics included are:
 
    ```python
    statistics = ['mean', # Rainfall average
@@ -154,24 +123,87 @@ Currently, the library can only represent rainfall at a given point. The basic m
   ```python
   storm_cell_displacement = [1.01, 50] # hours
   ```
+  
+If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott Rectangular Pulse Model) and simulate multi-site rainfall series is being used, the calibration parameters that need to be configured are as follows:
+
++ **coordinates:** ```strings``` defining the type of coordinates to which the location of the stations is referenced. It can be in **geographical** or **UTM** coordinates.
+
+  ```python
+  coordinates: 'geographical' #geographical/UTM
+  ```
+  
++ **storm_radius:** ```True or False``` when the process is True, the storm radius is included. In that case it uses the following parameter **storm_radius_p**, otherwise it is not used.
+  ```python
+  storm_radius: False
+  ```
+
++ **cell_radius:** ```list``` defiining the range of the cell radius (km).
+  ```python
+  cell_radius: [0.5, 10] #50, 100 limits depend on the coordinates type (geographical or UTM). Note that  1/cell_radius units are in km. Divide cell_radius per 100 if coordinates are in UTM.
+  ```
+
++ **storm_radius_p:** ```list``` defiining the range of storm radius (km).
+  ```python
+  storm_radius_p: [10, 40] #100, 5000limits depend on the coordinates type (geographical or UTM). Note that 1/storm_radius_p units are in km. Divide storm_radius_p per 100 if coordinates are in UTM.
+  ```
 
 ## Simulation hyperparameters
 
-+ **year_ini and year_fin:** Initial and final year of the simulated time series
 
-```python
-year_ini = 2000
-year_fin = 2100
-```
++ **Seasonality_type:** Python ```list``` tAllows to calculate the statistics defined after the simulation has been performed. In the calibration hyperparameters file the seasonality type is defined within the ```Seasonality_type``` field. This can be **annual, seasonal, montly or user_defined**. If the seasonality is ```user_defined``` it is necessary to enter in the ```Seasonality_user``` field the seasonality of the user's choice.
 
-+ **parameters_simulation**: ```list``` containing the values of the simulated parameters
+  + _Anual calibraton_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
+  + _Seasonal calibraton_: The library merges the different months into the prescribed groups, fitting a different set of parameters per group.
+  + _Monthly calibration_: The library fits a different set of parameters for each month of the time series.
+  + _Seasonality_user_: The user can define a seasonality different from the previous groups.
+  
++ **Seasonality_user: ** if the seasonality is set to _user_defined, the desired seasonality must be defined in this section.
+    ```python
+    ['(1, 2, 3, 4, 5, 6)','(7, 8, 9, 10, 11, 12)']
+    ```
+
++ **statistics_name:** ```list``` of ```strings``` that contain the statistics that have to be considered during the fitting process. The statistics included are:
+
+   ```python
+   statistics = ['mean', # Rainfall average
+                'var_h', # Variance
+                'autocorr_l_h', # Autocorrelation
+                'fih_h', # Probability of no rainfall
+                'fiWW_h', # Transition probability from rainy period to rainy period
+                'fiDD_h', # Transition probability from dry period to dry period
+                'M3_h'] # Skewness
+   ```
+
+   Statistics may refer to different lags (```l```) and aggregation levels (```h```), where the aggregation levels indicate the number of temporal resolutions over which the value is aggregated.
+   
+
++ **temporal_resolution:** ```string``` specifying the temporal resolution of the time series provided to the calibration process.
+
+   ```python
+   temporal_resolution = 'h' # Hourly resolution
+   temporal_resolution = 'd' # Daily resolution
+   ```
++ **process**: ```string``` configuring the model type.
 
   ```python
-  parameters_simulation = [lanbda, upsilon, beta, chi, epsilon]
+  process = 'normal' # Only one type of storm is considered
+  process = 'storms' # Convective and Frontal storm are considered
+  ```
+  
++ **coordinates:** ```strings``` defining the type of coordinates to which the location of the stations is referenced. It can be in **geographical** or **UTM** coordinates.
+
+  ```python
+  coordinates: 'geographical' #geographical/UTM
   ```
 
-+ **statistics_external**: ```list``` providing the statistics to be reproduced by the generated time series
-
++ **storm_radius_p:** ```list``` defiining the range of storm radius (km).
   ```python
-  statistics_external = ['mean', 'var_1', 'var_2', 'var_3', 'var_4', 'autocorr_1_1', 'autocorr_2_1', 'autocorr_3_1','fih_1', 'fiWW_1', 'fiDD_1', 'M3_1']
-    ```
+  storm_radius_p: [10, 40] #100, 5000limits depend on the coordinates type (geographical or UTM). Note that 1/storm_radius_p units are in km. Divide storm_radius_p per 100 if coordinates are in UTM.
+  ```
+  
++ **year_ini and year_fin:** Initial and final year of the simulated time series
+
+   ```python
+   year_ini = 2000
+   year_fin = 2100
+   ```
