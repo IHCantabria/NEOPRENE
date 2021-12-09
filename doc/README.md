@@ -152,10 +152,10 @@ If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott 
 
 + **Seasonality_type:** Python ```list``` tAllows to calculate the statistics defined after the simulation has been performed. In the calibration hyperparameters file the seasonality type is defined within the ```Seasonality_type``` field. This can be **annual, seasonal, montly or user_defined**. If the seasonality is ```user_defined``` it is necessary to enter in the ```Seasonality_user``` field the seasonality of the user's choice.
 
-  + _Anual calibraton_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
-  + _Seasonal calibraton_: The library merges the different months into the prescribed groups, fitting a different set of parameters per group.
-  + _Monthly calibration_: The library fits a different set of parameters for each month of the time series.
-  + _Seasonality_user_: The user can define a seasonality different from the previous groups.
+  + _annual_: The library assumes that a single set of parameters is able to capture the dynamics for the whole year.
+  + _seasonal_: The library merges the different months into the prescribed groups, fitting a different set of parameters per group.
+  + _monthly_: The library fits a different set of parameters for each month of the time series.
+  + _user_defined_: The user can define a seasonality different from the previous groups.
   
 + **Seasonality_user:** if the seasonality is set to _user_defined, the desired seasonality must be defined in this section.
     ```python
