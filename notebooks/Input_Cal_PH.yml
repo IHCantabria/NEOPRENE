@@ -1,0 +1,16 @@
+#YAML
+---
+Seasonality_type: 'monthly' #annual,monthly,seasonal,user_defined
+Seasonality_user: #['(1, 2, 3, 4, 5, 6)','(7, 8, 9, 10, 11, 12)']
+temporal_resolution: 'h'
+process: 'storms'
+statistics_name: ['mean', 'var_1', 'var_6', 'var_24', 'autocorr_1_1', 'autocorr_1_6', 'autocorr_1_24','fih_1', 'fiWW_6', 'fiDD_24', 'M3_1', 'M3_6', 'M3_24']
+weights: [100, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+number_iterations: 100
+number_bees: 1000
+time_between_storms: [20, 1000]
+number_storm_cells: [1, 100]
+cell_duration:  [0.15, 5]
+cell_intensity: [0.5, 2000]
+storm_cell_displacement: [1.01, 50]
+number_initializations: 1

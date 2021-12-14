@@ -128,6 +128,7 @@ def compare_statistics(CAL, SIM):
         CK = int(len(stats_obs.index)/RK)
     else:
         CK = int(np.ceil(np.sqrt(len(stats_obs.index))))
+        
     fig, axes = plt.subplots(RK, CK, figsize=(15, 15))
     for i, ii in enumerate(stats_obs.index):
         Data_sta=pd.DataFrame(index=np.arange(1, 13))
