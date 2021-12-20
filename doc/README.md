@@ -12,7 +12,7 @@ The **NEOPRENE** library allows to work with Neyman-Scott models for rainfall em
 
    ![Scheme of the generation process](Generation.png)
 
-A mathematical description of the model is given in the [linked document](MathematicalDescription.md).
+A mathematical description of the model is given in the [linked document](MathematicalDescription.md). The statistical properties of the model are shown in the [linked document](Statistical_properties.ipynb)
 
 The following sections present the calibraton and validation hyperparameters, as well as some elements that should be considered when using the **NEOPRENE** library.
 
