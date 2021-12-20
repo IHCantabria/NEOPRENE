@@ -206,7 +206,7 @@ If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott 
   coordinates: 'geographical' #geographical/UTM
   ```
 
-+ **storm_radius:** ```True or False``` when the process is True, the storm radius is included. In that case it uses the following parameter **storm_radius_p**, otherwise it is not used.
++ **storm_radius:** ```True or False```.
   ```python
   storm_radius: False
   ```
