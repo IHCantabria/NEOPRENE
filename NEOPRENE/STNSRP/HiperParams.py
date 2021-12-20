@@ -40,9 +40,10 @@ class Calibration(object):
         #self.cell_intensity          = hiper_params['cell_intensity']
         self.storm_cell_displacement = hiper_params['storm_cell_displacement']
         self.coordinates             = hiper_params['coordinates']
-        self.storm_radius            = hiper_params['storm_radius']
+        #self.storm_radius           = hiper_params['storm_radius']
+        self.storm_radius            = False
         self.cell_radius             = hiper_params['cell_radius']
-        self.storm_radius_p          = hiper_params['storm_radius_p']
+        #self.storm_radius_p          = hiper_params['storm_radius_p']
         
         
         if self.Seasonality_type == 'annual':
@@ -140,7 +141,8 @@ class Simulation(object):
         self.year_ini                = hiper_params['year_ini']
         self.year_fin                = hiper_params['year_fin']
         self.coordinates             = hiper_params['coordinates']
-        self.storm_radius            = hiper_params['storm_radius']
+        #self.storm_radius            = hiper_params['storm_radius']
+        self.storm_radius            = False
         
         if self.Seasonality_type=='annual':
             Seasonality=list()

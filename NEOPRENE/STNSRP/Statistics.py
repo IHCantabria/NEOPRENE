@@ -10,7 +10,6 @@ The statistics are then used to calibrate the model parameters
 '''
 
 import sys
-#sys.path.insert(1, '/home/javi/Projects/STNSRPM_new/STNSRPM/')
 from NEOPRENE.STNSRP.libs_STNSRP import *
 import numpy as np
 import pandas as pd
@@ -94,12 +93,12 @@ def cross_corr(statistics_name, Seasonality, temporal_resolution, time_series, A
     if np.sum(['cross' in i for i in statistics_name])>=1:
         pos=np.where(['cross' in i for i in statistics_name]); pos=pos[0]
         for i, ii in enumerate(pos):
-            cross_corr_s_aux=cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordinates, \
+            cross_corr_s_aux, Distance_correlation =cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordinates, \
                                                           statistics_name[pos[i]], temporal_resolution)
 
             cross_corr_stationality[statistics_name[pos[i]]]=cross_corr_s_aux
 
-    return cross_corr_stationality
+    return cross_corr_stationality, Distance_correlation
 
 def change_statistics_dic_order(statististics_dataframe, Seasonality):
     new_dic = {}
@@ -149,7 +148,7 @@ class Statistics (object):
                 #self.statististics_dataframe = statistics_from_serie(statistics_name,Seasonality_str,Seasonality,temporal_resolution, time_series)
                 statististics_dataframe_dic = statistics_from_several_series(statistics_name,Seasonality_str,Seasonality,temporal_resolution, time_series)
                 self.statistics_dataframe   = change_statistics_dic_order(statististics_dataframe_dic, Seasonality)
-                self.crosscorr_dataframe    = cross_corr(statistics_name,Seasonality,temporal_resolution, time_series, attributes, func, coordinates)
+                self.crosscorr_dataframe, self.crosscorr_dist_dataframe     = cross_corr(statistics_name,Seasonality,temporal_resolution, time_series, attributes, func, coordinates)
 
         elif files_folder != None:
             [self.statististics_dataframe, self.crosscorr_dataframe] = statistics_from_file(statistics_name,Seasonality_str,Seasonality,temporal_resolution, files_folder)

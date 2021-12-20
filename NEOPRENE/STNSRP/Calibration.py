@@ -40,8 +40,9 @@ class Calibration(object):
         #self.Input_Series = Input_Series.copy()
         
     
-        self.statistics_dataframe   = statistics.statistics_dataframe.copy()
-        self.crosscorr_dataframe    = statistics.crosscorr_dataframe.copy()
+        self.statistics_dataframe     = statistics.statistics_dataframe.copy()
+        self.crosscorr_dataframe      = statistics.crosscorr_dataframe.copy()
+        self.crosscorr_dataframe_dist = statistics.crosscorr_dist_dataframe.copy()
    
         ##Limits are obtained at the indicated time resolution
         if self.hiperparams.temporal_resolution=='d':
@@ -49,14 +50,27 @@ class Calibration(object):
         else:
             t=1
             
-        lim = np.array([
-            [(1/self.hiperparams.time_between_storms[1])*t, (1/self.hiperparams.time_between_storms[0])*t],
-            [self.hiperparams.number_storm_cells[0], self.hiperparams.number_storm_cells[1]],
-            [(1/self.hiperparams.cell_duration[1])*t, (1/self.hiperparams.cell_duration[0])*t],
-            #[(1/self.hiperparams.cell_intensity[1])*t, (1/self.hiperparams.cell_intensity[0])*t], 
-            [(1/self.hiperparams.storm_cell_displacement[1])*t, (1/self.hiperparams.storm_cell_displacement[0])*t],
-            [(1/self.hiperparams.cell_radius[1]), (1/self.hiperparams.cell_radius[0])],
-            [(1/self.hiperparams.storm_radius_p[1]), (1/self.hiperparams.storm_radius_p[0])]])
+        if self.hiperparams.storm_radius==True:
+            
+            lim = np.array([
+                [(1/self.hiperparams.time_between_storms[1])*t, (1/self.hiperparams.time_between_storms[0])*t],
+                [self.hiperparams.number_storm_cells[0], self.hiperparams.number_storm_cells[1]],
+                [(1/self.hiperparams.cell_duration[1])*t, (1/self.hiperparams.cell_duration[0])*t],
+                #[(1/self.hiperparams.cell_intensity[1])*t, (1/self.hiperparams.cell_intensity[0])*t], 
+                [(1/self.hiperparams.storm_cell_displacement[1])*t, (1/self.hiperparams.storm_cell_displacement[0])*t],
+                [(1/self.hiperparams.cell_radius[1]), (1/self.hiperparams.cell_radius[0])],
+                [(1/self.hiperparams.storm_radius_p[1]), (1/self.hiperparams.storm_radius_p[0])]])
+            
+        elif self.hiperparams.storm_radius==False:
+            
+              lim = np.array([
+                [(1/self.hiperparams.time_between_storms[1])*t, (1/self.hiperparams.time_between_storms[0])*t],
+                [self.hiperparams.number_storm_cells[0], self.hiperparams.number_storm_cells[1]],
+                [(1/self.hiperparams.cell_duration[1])*t, (1/self.hiperparams.cell_duration[0])*t],
+                #[(1/self.hiperparams.cell_intensity[1])*t, (1/self.hiperparams.cell_intensity[0])*t], 
+                [(1/self.hiperparams.storm_cell_displacement[1])*t, (1/self.hiperparams.storm_cell_displacement[0])*t],
+                [(1/self.hiperparams.cell_radius[1]), (1/self.hiperparams.cell_radius[0])]])
+            
             
         #statististics_fit_dataframe=pd.DataFrame(index=self.hiperparams.statistics_name,columns=self.hiperparams.Seasonality_str)
         sta_len = len(self.hiperparams.statistics_name)
@@ -251,7 +265,7 @@ class Calibration(object):
         
         Dataframe_xi_months = XI_MONTHS(time_series, Dataframe_params, self.hiperparams.process) #calculate scale parameter for every gauge
 
-        resuls = parameters_calibration(Dataframe_params,statistics_dataframe_fit, crosscorr_dataframe_fit, self.statistics_dataframe, self.crosscorr_dataframe, Error_dataframe, Dataframe_xi_months)
+        resuls = parameters_calibration(Dataframe_params,statistics_dataframe_fit, crosscorr_dataframe_fit, self.statistics_dataframe, self.crosscorr_dataframe,self.crosscorr_dataframe_dist, Error_dataframe, Dataframe_xi_months)
         
         
         

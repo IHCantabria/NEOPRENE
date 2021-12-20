@@ -101,9 +101,10 @@ class Simulation(object):
     
         statististics_sim_df = Statistics(self.hiperparams, time_series = Data, attributes = Input_Attr)
         
-        statistics_dataframe   = statististics_sim_df.statistics_dataframe.copy()
-        crosscorr_dataframe    = statististics_sim_df.crosscorr_dataframe.copy()
+        statistics_dataframe        = statististics_sim_df.statistics_dataframe.copy()
+        crosscorr_dataframe         = statististics_sim_df.crosscorr_dataframe.copy()
+        crosscorr_dataframe_dist    = statististics_sim_df.crosscorr_dist_dataframe.copy()
 
-        results = outputs_simulation(Df_sim_join_day_,Df_sim_join_hour_,statistics_dataframe,crosscorr_dataframe, self.hiperparams.temporal_resolution,self.hiperparams.Seasonality)
+        results = outputs_simulation(Df_sim_join_day_,Df_sim_join_hour_,statistics_dataframe,crosscorr_dataframe,crosscorr_dataframe_dist, self.hiperparams.temporal_resolution,self.hiperparams.Seasonality)
 
         return results

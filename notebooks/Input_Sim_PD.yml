@@ -6,4 +6,4 @@ statistics_name: ['mean', 'var_1', 'var_2', 'var_3', 'var_4', 'autocorr_1_1', 'a
 temporal_resolution: 'd'
 process: 'normal'
 year_ini: 2020             
-year_fin: 2080      
+year_fin: 2100      

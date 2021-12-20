@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 import datetime
 from datetime import timedelta
+import math
 
 def allmonths(dataframe):
     """Paso el dataframe a 12 columnas con 12 meses"""
@@ -98,7 +99,7 @@ def IDW_f(xx, yy, zz, x, y, betha):
     
     return np.sum(zz*weights)
 
-def compare_statistics(CAL, SIM):
+def compare_statistics(CAL, SIM, frecuency):
 
     dataframe_statististics_obs = pd.DataFrame(index = CAL.statististics_Fit.index)
     dataframe_statististics_fit = pd.DataFrame(index = CAL.statististics_Fit.index)
@@ -116,14 +117,36 @@ def compare_statistics(CAL, SIM):
     stats_fit=allmonths(dataframe_statististics_fit)
     stats_sim=allmonths(dataframe_statististics_sim)
     
-    RK=int(np.ceil(np.sqrt(len(stats_obs.index)))); 
-    if len(stats_obs.index) % RK == 0:
-        CK = int(len(stats_obs.index)/RK)
-    else:
-        CK = int(np.ceil(np.sqrt(len(stats_obs.index))))
+     
+    N = len(stats_obs.index)
+    RK = int(np.ceil(np.sqrt(len(stats_obs.index)))); 
+    CK = int(math.ceil(N / RK))
+        
+    delete =  RK*CK-len(stats_obs.index)
+    
     fig, axes = plt.subplots(RK, CK, figsize=(15, 15))
+    axes = axes.ravel()
     for i, ii in enumerate(stats_obs.index):
+        
+        if 'mean' in ii:
+            name_statistics = r'$\mu$'
+        elif 'var' in ii:
+            name_statistics = r'$\sigma_{'+ii.split('_')[-1]+frecuency+'}$'
+        elif 'autocorr' in ii:
+            name_statistics = r'$ACF-lag1_{'+ii.split('_')[-2]+frecuency+'}$'
+        elif 'fih' in ii:
+            name_statistics = r'$\phi_{'+ii.split('_')[-1]+frecuency+'}$'
+        elif 'fiWW' in ii:
+            name_statistics = r'$\phi^{WW}_{'+ii.split('_')[-1]+frecuency+'}$'
+        elif 'fiDD' in ii:
+            name_statistics = r'$\phi^{DD}_{'+ii.split('_')[-1]+frecuency+'}$'
+        elif 'M3' in ii:
+            name_statistics = r'$\overline{\mu}_{3_'+ii.split('_')[-1]+frecuency+'}$'
+        
+        
+        
         Data_sta=pd.DataFrame(index=np.arange(1, 13))
+        Data_sta.index = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
         Obs=list(); Fit=list(); Sim=list();
         for m in np.arange(1, 13):
             Obs.append(stats_obs[m].loc[ii])
@@ -134,18 +157,39 @@ def compare_statistics(CAL, SIM):
         Data_sta['Fit']=Fit
         Data_sta['Sim']=Sim
         #Ploteo
-        row = i // CK
-        col = i % CK
-        ax=axes[row,col]
-        ax.set_title(ii)
+        ax=axes[i]
+        ax.set_title(name_statistics)
         ax.grid(True)
         legnd=['Obs', 'Fit', 'Sim']
-        pp=Data_sta['Obs'].plot(style='k--', lw=2,  ax=axes[row,col])
-        Data_sta['Fit'].plot(style='bs', ax=axes[row,col])
-        Data_sta['Sim'].plot(style='r^', ax=axes[row,col])
-        pp.legend(legnd, loc='best', fontsize=15)
+        pp=Data_sta['Obs'].plot(style='k--', lw=2,  ax=axes[i])
+        Data_sta['Fit'].plot(style='bs', ax=axes[i])
+        Data_sta['Sim'].plot(style='r^', ax=axes[i])
+        #pp.legend(legnd, loc='best', fontsize=15)
         if ii[0:2]==('fi' or 'au'):
             ax.set_ylim(0, 1)
+        del name_statistics
+        
+        ax.grid()
+        ax.set_xticks(np.arange(0,12))
+        ax.set_xticklabels(['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],rotation = 45)
+        
+    if delete!=0:
+        for i in range(1,delete+1):
+            axes[-i].remove()
+            
+    lines = []
+    labels = []
+    for i,ax in enumerate(fig.axes):
+        axLine, axLabel = ax.get_legend_handles_labels()
+        lines.extend(axLine)
+        labels.extend(axLabel)
+    fig.legend(lines[:3], labels[:3],           
+               loc = 8,ncol=3,fontsize=15)
+    fig.tight_layout(pad=3.7)
+    
+    ax.set_visible(False)
+    
+    return fig
 
 def exceedence_probability(Serie_Observed, Serie_Simulated, temporal_resolution):
     # Observed
@@ -173,6 +217,8 @@ def exceedence_probability(Serie_Observed, Serie_Simulated, temporal_resolution)
     ax.grid(True)
     ax.tick_params(labelsize=13)
     ax.legend(fontsize = 15)
+    
+    return fig
 
 def disaggregate_rainfall(x_series, y_series):
     """
@@ -224,6 +270,65 @@ def disaggregate_rainfall(x_series, y_series):
             results.iloc[posi_d]=y_series.iloc[posi_h_s].values
             
     return results
+
+
+def figure_correlation(CAL,SIM):
+
+    import matplotlib as mpl
+    from matplotlib.lines import Line2D
+    import matplotlib.patches as mpatches
+
+    RK=int(np.ceil(np.sqrt(len(SIM.Seasonality)))); 
+    CK=int(np.ceil(np.sqrt(len(SIM.Seasonality)))); 
+    
+    figures = []
+    names    = []
+
+    for cross_sim in SIM.crosscorr_Simulated.keys():
+        fig, axes = plt.subplots(RK, CK, figsize=(10, 10))
+        for i, season in enumerate(SIM.Seasonality):
+            obs_cross = CAL.crosscorr_Real[cross_sim][season]
+            cal_cross = CAL.crosscorr_Fit[cross_sim][season]
+            sim_cross = SIM.crosscorr_Simulated[cross_sim][season]
+
+            tim = cross_sim.split('_')[-1]
+            frq = SIM.temporal_resolution
+
+            row = i // CK
+            col = i % CK
+
+            ax=axes[row,col]
+            
+            ax.plot(obs_cross['dist'].values, obs_cross['cross_corr'].values, 'b^-')
+            ax.plot(cal_cross['dist'].values, cal_cross['cross_corr'].values, 'ks-')
+            ax.plot(CAL.crosscorr_Real_Dist[season].dist, CAL.crosscorr_Real_Dist[season].Corr,'.b')
+            ax.plot(sim_cross['dist'].values, sim_cross['cross_corr'].values, '-r')
+            ax.plot(SIM.crosscorr_Simulated_dist[season].dist, SIM.crosscorr_Simulated_dist[season].Corr,'xr')
+            ax.set_ylim(-0.1,1.1)
+            ax.set_yticks(np.arange(0,1.1,0.2))
+            #ax.set_yticklabels(np.arange(0,1.1,0.1))
+            ax.set_title('Months '+str(season),fontsize = 15)
+            ax.set_ylabel(tim+frq+' cross-correlation',fontsize = 15)
+            ax.set_xlabel('distance (km)',fontsize = 15)
+            ax.tick_params(axis = 'both', labelsize = 15)
+            ax.grid()
+
+
+        legend_elements = [Line2D([0], [0], label='Observed', color='b',linestyle = '-',marker='^'),
+                           Line2D([0], [0], label='Calibrated', color='k',linestyle = '-',marker='s'),
+                           Line2D([0], [0], label='Simulated', color='r',linestyle = '-'),
+                           Line2D([], [], label='Simulated', color='r',marker='x',linestyle='None'),
+                           Line2D([], [], label='Observed', color='b',marker='.',linestyle='None'),
+                          ]
+
+        fig.legend(handles=legend_elements, loc = 8, ncol=5,fontsize=15)
+
+        fig.tight_layout(pad=3.7)
+        
+        figures.append(fig)
+        names.append(cross_sim)
+        
+    return figures, names
  
 
 	

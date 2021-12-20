@@ -99,6 +99,9 @@ def calculate_statistics(Data,statistics,temporal_resolution):
 def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordinates, cross_corr_h, temporal_resolution):
     
     cross_corr_stationality={}
+    
+    cross_corr_dist_stationality={}
+    
 
     for i in Seasonality:
         Data=time_series.copy()
@@ -119,11 +122,45 @@ def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordi
         h=int(cross_corr_h.split("_")[1])
         aux_month=Data.resample(str(h) + temporal_resolution).agg(pd.Series.sum, min_count=1); 
 
-        cross_corr['dist'], cross_corr['cross_corr']=cross_correlation(Attributes, aux_month, func, 11, coordinates)
+        cross_corr['dist'], cross_corr['cross_corr'] = cross_correlation(Attributes, aux_month, func, 11, coordinates)
         
-        cross_corr_stationality[i]=cross_corr
+        cross_corr_stationality[i] = cross_corr
+        cross_corr_dist_stationality[i] = cross_correlation_dist(Attributes, aux_month, func, coordinates)
 
-    return cross_corr_stationality
+    return cross_corr_stationality, cross_corr_dist_stationality
+
+def cross_correlation_dist(Stations, Series, funcion, coordinates):
+    Spatial_correlation=pd.DataFrame(index=Series.columns, columns=Series.columns)
+    Distance=pd.DataFrame(index=Series.columns, columns=Series.columns)
+
+    for i, ii in enumerate(Spatial_correlation.index):
+        x1=Stations[Stations['ID']==ii].X.values; x1=x1[0]
+        y1=Stations[Stations['ID']==ii].Y.values; y1=y1[0]
+        data1=Series[ii].values
+        for j, jj, in enumerate(Spatial_correlation.columns):
+            x2=Stations[Stations['ID']==jj].X.values; x2=x2[0]
+            y2=Stations[Stations['ID']==jj].Y.values; y2=y2[0]
+            if (coordinates.lower()=='geographical'):
+                Distance[ii][jj]=haversine((y1, x1), (y2, x2), unit=Unit.KILOMETERS)
+            elif coordinates.lower()=='utm':
+                Distance[ii][jj]=distance_f(x1, y1, x2, y2)/1000
+            else:
+                raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
+
+                
+            pos_no_nans=np.intersect1d(np.where(~np.isnan(Series[ii].values)), np.where(~np.isnan(Series[jj].values)))
+            corr_s=stats.pearsonr(Series[ii].values[pos_no_nans], Series[jj].values[pos_no_nans])
+            Spatial_correlation[ii][jj]=corr_s[0]
+
+    Distance_correlation=pd.DataFrame()
+    Distance_correlation['Corr']=np.reshape(Spatial_correlation.values, np.size(Spatial_correlation.values))
+    Distance_correlation['dist']=np.reshape(Distance.values, np.size(Distance.values))
+    
+    Distance_correlation=pd.DataFrame(np.vstack({tuple(row) for row in Distance_correlation.values}), columns=['Corr', 'dist'])
+
+    Distance_correlation = Distance_correlation[np.isfinite(Distance_correlation['Corr'])]
+    
+    return Distance_correlation
 
 
 def cross_correlation(Stations, Series, funcion, divisions, coordinates):
@@ -170,7 +207,7 @@ def cross_correlation(Stations, Series, funcion, divisions, coordinates):
     xdata = Distance_correlation['dist'].values
     ydata = Distance_correlation['Corr'].values
     
-    cross_correlation.Distance_correlation=Distance_correlation
+    cross_correlation.Distance_correlation = Distance_correlation
     
     popt, pcov = curve_fit(func, xdata, ydata, maxfev=1000)
     
@@ -313,7 +350,7 @@ class evaluateInd_PSO(object):
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
                     e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
-                        w1=1; l=0
+                        w1=self.w[ii]/11 ; l=0
                         h=int(self.s[ii].split("_")[1])
                         d=dist_aux[jj] 
                         a=NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d)\
@@ -330,7 +367,7 @@ class evaluateInd_PSO(object):
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
                     e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
-                        w1=1; l=0
+                        w1=self.w[ii]/11; l=0
                         h=int(self.s[ii].split("_")[1])
                         d=dist_aux[jj] 
                         a=NSRP_cross_correlation_with_storm_radius(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, \
@@ -426,7 +463,7 @@ class evaluateInd_PSO(object):
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
                     e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
-                        w1=1; l=0
+                        w1=self.w[ii]/11; l=0
                         #h=int(self.s[ii].split("_",3)[2])
                         h=int(self.s[ii].split("_")[1])
                         d=dist_aux[jj] 
@@ -443,7 +480,7 @@ class evaluateInd_PSO(object):
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
                     e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
-                        w1=1; l=0
+                        w1=self.w[ii]/11; l=0
                         h=int(self.s[ii].split("_")[1])
                         d=dist_aux[jj] 
                         a=NSRP_cross_correlation_with_storm_radius(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, \
@@ -539,7 +576,7 @@ class evaluateInd_PSO(object):
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
                     e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
-                        w1=1; l=0
+                        w1=self.w[ii]/11; l=0
                         #h=int(self.s[ii].split("_",3)[2])
                         h=int(self.s[ii].split("_")[1])
                         d=dist_aux[jj] 
@@ -554,7 +591,7 @@ class evaluateInd_PSO(object):
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
                     e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
-                        w1=1; l=0
+                        w1=self.w[ii]/11; l=0
                         #h=int(self.s[ii].split("_",3)[2])
                         h=int(self.s[ii].split("_")[1])
                         d=dist_aux[jj] 
@@ -913,9 +950,9 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
                 time_fin_cells_aux=np.array(time_fin_cells_aux_storm)
                 Intensity_cells_aux=np.array(Intensity_cells_aux_storm)
 
-            xixi=Df_xi[Df_xi.index==monthss[0]].values[0][nunu]
-            Intensity_cells_aux2=np.random.exponential(scale=1/xixi, size=len(Intensity_cells_aux))
-            Intensity_cells_aux=Intensity_cells_aux2.copy()
+            #xixi=Df_xi[Df_xi.index==monthss[0]].values[0][nunu]
+            #Intensity_cells_aux2=np.random.exponential(scale=1/xixi, size=len(Intensity_cells_aux))
+            #Intensity_cells_aux=Intensity_cells_aux2.copy()
 
 
             t_ini = np.hstack([time_ini_cells_aux, time_fin_cells_aux])
@@ -925,7 +962,7 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
                 i_ini = i_ini[0]
             else: 
                 i_ini = np.hstack([Intensity_cells_aux.T, -Intensity_cells_aux.T])
-                a=1
+                i_ini = i_ini[0]
 
             orden = np.argsort(t_ini)
             t = t_ini[orden]
