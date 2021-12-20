@@ -29,7 +29,7 @@ The library can be used for single-site application ([NSRP_test.ipynb](https://g
    4. The cell radius follows an **Exponential** process of parámeter $phi; mersure in km^-1 (only for the STNSRPM).
 
 ## Calibration hyperparameters
-The calibration parameters have to be filled in the yml file. The folder notebooks presents some examples [Input_Cal_PD.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_PD.yml), [Input_Cal_PH.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_PH.yml) and [Input_Cal_SPD.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_SPD.yml). The calibration parameters are explained below. 
+The calibration parameters have to be filled in the yml file. The folder [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) presents some examples [Input_Cal_PD.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_PD.yml), [Input_Cal_PH.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_PH.yml) and [Input_Cal_SPD.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_SPD.yml). The calibration parameters are explained below. 
 
 + **Data:** Pandas ```DataFrame``` that contains the original time series of rainfall.
 
