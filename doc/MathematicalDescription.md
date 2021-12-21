@@ -8,7 +8,7 @@ The origin of the storms follows a Poisson process with parameter &lambda;.  Ass
 
 ![Model scheme](ModelScheme.png)
 
-The version of the model implemented in this repository can include a maximum of two independent superposed storm generators in order to better adjust to the different types of storms (e.g. convective and frontal rain); which leads us to a model with a maximum of 10 parameters (&lambda;, &upsilon;, &beta;, &epsilon; and &chi; for each type of storm) for the punctual model (NSRPM) and 12 parameters (&lambda;, &upsilon;, &beta;, &epsilon; &chi; and %phi; for each type of storm) for the space-time model (STNSRPM). Furthermore, the STNSRPM allows the inclusion of the storm radius parameter (&phi;_s) which helps to reproduce the observed cross-correlation when working in large basins [2].
+The version of the model implemented in this repository can include a maximum of two independent superposed storm generators in order to better adjust to the different types of storms (e.g. convective and frontal rain); which leads us to a model with a maximum of 10 parameters (&lambda;, &upsilon;, &beta;, &epsilon; and &chi; for each type of storm) for the punctual model (NSRPM) and 12 parameters (&lambda;, &upsilon;, &beta;, &epsilon; &chi; and &phi; for each type of storm) for the space-time model (STNSRPM). Furthermore, the STNSRPM allows the inclusion of the storm radius parameter (&phi;_s) which helps to reproduce the observed cross-correlation when working in large basins [2] (NOT AVAILABLE).
 
 The statistical properties of the model were derived from [1, 5, 2, 3, 6].
 
