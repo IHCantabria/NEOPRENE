@@ -12,7 +12,7 @@ The **NEOPRENE** library allows to work with Neyman-Scott models for rainfall em
 
    ![Scheme of the generation process](Generation.png)
    
-3. **Rainfall Analysis** Given the observed and the synthetic simulated rainfall series, some analysis can be performed in order to compare the observed and the simulated series.
+3. **Rainfall Analysis:** Given the observed and the synthetic simulated rainfall series, some analysis can be performed in order to compare the observed and the simulated series.
 
 INCLUDE SCHEME
 
