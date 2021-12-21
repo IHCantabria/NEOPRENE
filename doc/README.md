@@ -11,14 +11,20 @@ The **NEOPRENE** library allows to work with Neyman-Scott models for rainfall em
 2. **Rainfall Generation:** Given a set of parameters, time series at the daily or hourly scale, or their characteristics statistics can be generated.
 
    ![Scheme of the generation process](Generation.png)
+   
+3. **Rainfall Analysis** Given the observed and the synthetic simulated rainfall series, some analysis can be performed in order to compare the observed and the simulated series.
 
-A mathematical description of the model is given in the [linked document](MathematicalDescription.md). The statistical properties of the model are shown in the [linked document](Statistical_properties.ipynb)
+INCLUDE SCHEME
+
+A description of the model is given in the following documents:
+- [Physical description](MathematicalDescription.md).
+- [Statistical properties](Statistical_properties.ipynb).
 
 The following sections present the calibraton and validation hyperparameters, as well as some elements that should be considered when using the **NEOPRENE** library.
 
 ## Implementation
 
-The library can be used for single-site application ([NSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/NSRP_test.ipynb)) or for multi-site rainfall generation ([STNSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/NSRP_test.ipynb)). The multi-site model (STNSRPM) requires some extra parameteres to fit the observed the spatial correlation. Thus, some of the paremeteres present here are used only for the space-time model:
+The library can be used for single-site application ([NSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/NSRP_test.ipynb)) or for multi-site rainfall generation ([STNSRP_test.ipynb](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/NSRP_test.ipynb)). The multi-site model (STNSRPM) requires some extra parameteres to fit the spatial correlation. Thus, some of the paremeteres present here are used only for the space-time model:
 
 1. Storm arrivals follow a **Poisson** process of parameter &lambda; expressed in storms per square kilometer and per day.
 2. Each storm is characterized by a number of cells that follow a **Poisson** process of parameter &upsilon; expressed in storm cells per storm.
@@ -60,7 +66,7 @@ The calibration parameters have to be filled in the yml file. The folder [notebo
 + **statistics_name:** ```list``` of ```strings``` that contain the statistics that have to be considered during the fitting process. The statistics included are:
 
    ```python
-   statistics = ['mean', # Rainfall average
+   statistics = ['mean', # Rainfall average (only for the NSRPM)
                 'var_h', # Variance
                 'autocorr_l_h', # Autocorrelation
                 'fih_h', # Probability of no rainfall
@@ -125,26 +131,24 @@ The calibration parameters have to be filled in the yml file. The folder [notebo
   ```python
   storm_cell_displacement = [1.01, 50] # hours
   ```
-  
-If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott Rectangular Pulse Model) and simulate multi-site rainfall series is being used, the calibration parameters that need to be configured are as follows:
 
-+ **coordinates:** ```strings``` defining the type of coordinates to which the location of the stations is referenced. It can be in **geographical** or **UTM** coordinates.
++ **coordinates:** ```strings``` defining the type of coordinates to which the location of the stations is referenced. It can be in **geographical** or **UTM** coordinates (only for the STNSRPM).
 
   ```python
   coordinates: 'geographical' #geographical/UTM
   ```
   
-+ **storm_radius:** ```True or False``` when the process is True, the storm radius is included. In that case it uses the following parameter **storm_radius_p**, otherwise it is not used.
++ **storm_radius:** ```True or False``` when the process is True, the storm radius is included. In that case it uses the following parameter **storm_radius_p**, otherwise it is not used (only for the STNSRPM; NOT AVAILABLE).
   ```python
   storm_radius: False
   ```
 
-+ **cell_radius:** ```list``` defiining the range of the cell radius (km).
++ **cell_radius:** ```list``` defiining the range of the cell radius in km (only for the STNSRPM).
   ```python
   cell_radius: [0.5, 10] # km
   ```
 
-+ **storm_radius_p:** ```list``` defiining the range of storm radius (km).
++ **storm_radius_p:** ```list``` defiining the range of storm radius in km (only for the STNSRPM; NOT AVAILABLE).
   ```python
   storm_radius_p: [10, 40] # km
   ```
@@ -167,7 +171,7 @@ If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott 
 + **statistics_name:** ```list``` of ```strings``` that contain the statistics that have to be considered during the fitting process. The statistics included are:
 
    ```python
-   statistics = ['mean', # Rainfall average
+   statistics = ['mean', # Rainfall average (only for the NSRPM)
                 'var_h', # Variance
                 'autocorr_l_h', # Autocorrelation
                 'fih_h', # Probability of no rainfall
@@ -198,15 +202,14 @@ If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott 
    year_ini = 2000
    year_fin = 2100
    ```
- If you are using Python code for calibrate the STNSRPM (Space-Time Neyman-Scott Rectangular Pulse Model) and simulate multi-site rainfall series is being used, the calibration parameters that need to be configured are as follows:
- 
-+ **coordinates:** ```strings``` defining the type of coordinates to which the location of the stations is referenced. It can be in **geographical** or **UTM** coordinates.
+   
++ **coordinates:** ```strings``` defining the type of coordinates to which the location of the stations is referenced. It can be in **geographical** or **UTM** coordinates (only for the STNSRPM).
 
   ```python
   coordinates: 'geographical' #geographical/UTM
   ```
 
-+ **storm_radius:** ```True or False```.
++ **storm_radius:** ```True or False``` only for the STNSRPM.
   ```python
   storm_radius: False
   ```
