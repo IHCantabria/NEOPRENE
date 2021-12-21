@@ -17,10 +17,10 @@ Other papers by the authors where -previous incarnations of- the **NEOPRENE** li
 
 | Directory | Contents |
 | :-------- | :------- |
-|  [NSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/NSRP) | Python code to calibrate the NSRPM (Neyman-Scott Rectangular Pulse Model) and simulate synthetic rainfall series.
-|  [STNSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/STNSRP) | Python code for calibrate the STNSRPM (Space-Time Neyman-Scott Rectangular Pulse Model) and simulate multi-site rainfall series.
+|  [NSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/NSRP) | Python code to calibrate the NSRPM (Neyman-Scott Rectangular Pulse Model) and simulate single-site synthetic rainfall series.
+|  [STNSRP](https://github.com/IHCantabria/NEOPRENE/tree/main/NEOPRENE/STNSRP) | Python code for calibrate the STNSRPM (Space-Time Neyman-Scott Rectangular Pulse Model) and simulate multi-site synthetic rainfall series.
 | [doc](https://github.com/IHCantabria/NEOPRENE/tree/main/doc) | Description of the model.
-| [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) |  Jupyter notebooks with examples on how to calibrate, simulate and validate a Neyman-Scott model using the library. Examples on how to perform a daily-to-hourly rainfall disaggregation using the synthetic series is also included.
+| [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) |  Jupyter notebooks with examples on how to calibrate, simulate and validate a Neyman-Scott model using the library. Examples on how to perform a daily-to-hourly rainfall disaggregation using the synthetic series are also included.
 
 ## Requirements
 
