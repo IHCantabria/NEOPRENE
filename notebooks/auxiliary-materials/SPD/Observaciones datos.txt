@@ -1,5 +1,0 @@
-El archivo resultante "PR_ASON_CHC_AEMET" es la unión entre las series diarias de las estaciones de AEMET (PR_series_AEMET_daily_FILTRADO) y las estaciones de la CHC(PR_series_CHC_daily_PROCESADO)
-
-El archivo resultante "Inventario_Seriestemporales" es el inventario de las estaciones de AEMET (que estaba disponible en la información del IH2020), complementado con los datos de las estaciones de la CHC,que fueron recolectados de diferentes fuentes de información.
-
-** Importante: como son las series en bruto, tener en cuenta que las estaciones de AEMET (1093,1097,1086,1104,1104O,1078E,1095E,9048) están expresadas en dm
