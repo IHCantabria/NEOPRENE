@@ -2,7 +2,7 @@
 
 ## Concept
 
-The **NEOPRENE** library allows to work with Neyman-Scott models for rainfall emulations in an easy way. The library has two main functionalities:
+The **NEOPRENE** library allows to work with Neyman-Scott models for rainfall emulations in an easy way. The library has three main functionalities:
 
 1. **Model Calibration:** Taking daily or hourly time series, or their characteristics statistics, a set of optimal parameters are computed. These parameters allow to reproduce the main statistical properties of the time series, or at least, the provided statistics.
 
@@ -32,10 +32,10 @@ The library can be used for single-site application ([NSRP_test.ipynb](https://g
    1. The cell lag from the storm origin that follows an **Exponential** process of parameter &beta; measured in hours^-1.
    2. The cell duration that follows an **Exponential** process of parameter &epsilon; measured in hours^-1.
    3. The cell rainfall intensity that follow an **Exponential** process of parameter &chi; measured in hours per milimeter.
-   4. The cell radius follows an **Exponential** process of parámeter $phi; mersure in km^-1 (only for the STNSRPM).
+   4. The cell radius follows an **Exponential** process of parámeter &phi; mersure in km^-1 (only for the STNSRPM).
 
 ## Calibration hyperparameters
-The calibration parameters have to be filled in the yml file. The folder [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) presents some examples [Input_Cal_PD.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_PD.yml), [Input_Cal_PH.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_PH.yml) and [Input_Cal_SPD.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_SPD.yml). The calibration parameters are explained below. 
+The calibration parameters have to be filled in the yml file. The folder [notebooks](https://github.com/IHCantabria/NEOPRENE/tree/main/notebooks) contains some examples [Input_Cal_PD.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_PD.yml), [Input_Cal_PH.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_PH.yml) and [Input_Cal_SPD.yml](https://github.com/IHCantabria/NEOPRENE/blob/main/notebooks/Input_Cal_SPD.yml). The calibration parameters are explained below. 
 
 + **Data:** Pandas ```DataFrame``` that contains the original time series of rainfall.
 
