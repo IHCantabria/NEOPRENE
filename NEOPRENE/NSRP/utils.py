@@ -147,7 +147,8 @@ def compare_statistics(CAL, SIM, frecuency):
         elif 'fiDD' in ii:
             name_statistics = r'$\phi^{DD}_{'+ii.split('_')[-1]+frecuency+'}$'
         elif 'M3' in ii:
-            name_statistics = r'$\overline{\mu}_{3_'+ii.split('_')[-1]+frecuency+'}$'
+            #name_statistics = r'$\overline{\mu}_{3_'+ii.split('_')[-1]+frecuency+'}$'
+            name_statistics = r'$\bar{\mu}_{3_{'+ii.split('_')[-1]+frecuency+'}}$'
         
         Data_sta=pd.DataFrame(index=np.arange(1, 13))
         Obs=list(); Fit=list(); Sim=list();
@@ -163,7 +164,7 @@ def compare_statistics(CAL, SIM, frecuency):
         Data_sta['Sim']=Sim
         #Ploteo
         ax=axes[i]
-        ax.set_title(name_statistics)
+        ax.set_title(name_statistics,fontsize=18)
         ax.grid(True)
         legnd=['Obs', 'Fit', 'Sim']
         pp=Data_sta['Obs'].plot(style='k--', lw=2,  ax=axes[i])
