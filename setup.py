@@ -19,6 +19,7 @@ setup(  name='NEOPRENE',
         maintainer_email = 'manuel.deljesus@unican.es',
         url = 'https://github.com/IHCantabria/NEOPRENE',
         include_package_data = True,
+        package_data={'': ['notebooks/*']},
         python_requires='>=3.7, <4',
         install_requires=[
             'numpy',
