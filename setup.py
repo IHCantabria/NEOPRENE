@@ -32,6 +32,7 @@ setup(  name='NEOPRENE',
             'haversine',
             'tqdm',
             'pyshp',
+            'shapely',
         ],
         extras_require={'plotting': ['matplotlib>=2.2.0', 'jupyter','jupyterlab']}
         )
