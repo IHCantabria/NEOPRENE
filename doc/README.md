@@ -2,7 +2,7 @@
 
 ## Concept
 
-The **NEOPRENE** library allows to work with Neyman-Scott models for rainfall emulations in an easy way. The library has three main functionalities:
+The **NEOPRENE** library allows to work with Neyman-Scott models for rainfall emulations in an easy way. The library has two main functionalities:
 
 1. **Model Calibration:** Taking daily or hourly time series, or their characteristics statistics, a set of optimal parameters are computed. These parameters allow to reproduce the main statistical properties of the time series, or at least, the provided statistics.
 
@@ -12,9 +12,7 @@ The **NEOPRENE** library allows to work with Neyman-Scott models for rainfall em
 
    ![Scheme of the generation process](Generation.png)
    
-3. **Rainfall Analysis:** Given the observed and the synthetic simulated rainfall series, some analysis can be performed in order to compare the observed and the simulated series.
-
-INCLUDE SCHEME
+A third functionality, "analysis", is also available which contains several functions to extend the functionality of the library and to simplify its use, like a function to compare the simulated series with the observed ones and a function for daily-to-hourly rainfall disaggregation, for instance.
 
 A description of the model is given in the following documents:
 - [Physical description](MathematicalDescription.md).
