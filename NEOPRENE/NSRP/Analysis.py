@@ -239,7 +239,7 @@ class Analysis(object):
         self.names_figures = []
         
     def disaggregate_rainfall(self,x_series, y_series):
-        self.hourly_disaggregation = self.disaggregation_rainfall(x_series,y_series)
+        self.hourly_disaggregation = disaggregation_rainfall(x_series,y_series)
         
     def compare_statistics_fig(self):
         self.figures.append(compare_statistics(self.CAL, self.SIM, self.SIM.temporal_resolution))

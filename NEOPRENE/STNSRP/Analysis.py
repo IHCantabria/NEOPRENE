@@ -131,7 +131,7 @@ def exceedence_probability(Serie_Observed, Serie_Simulated, temporal_resolution)
     
     return fig
 
-def disaggregate_rainfall(x_series, y_series):
+def disaggregation_rainfall(x_series, y_series):
     """
     Dissagregation function from: A spatial–temporal point process model of rainfall
     for the Thames catchment, UK (Cowpertwait 2005). Eq:15
@@ -254,6 +254,9 @@ class Analysis(object):
         self.SIM = SIM
         self.figures = []
         self.names_figures = []
+        
+    def disaggregate_rainfall(self,x_series, y_series):
+        self.hourly_disaggregation = disaggregation_rainfall(x_series,y_series)
         
     def compare_statistics_fig(self):
         self.figures.append(compare_statistics(self.CAL, self.SIM, self.SIM.temporal_resolution))
