@@ -8,8 +8,8 @@ with open(this_directory / "README.md", encoding="utf-8") as f:
 
 setup(  name='NEOPRENE',
         packages = find_packages(),
-        license = "Apache 2.0",
-        version='0.0.14',
+        license = "GPLv3",
+        version='0.99.1',
         description='🌎 Scripts and information to synthetic generation of precipitation based on Point Processes.',
         long_description=long_description,
         long_description_content_type='text/markdown',

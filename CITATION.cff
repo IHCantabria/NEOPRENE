@@ -14,8 +14,8 @@ authors:
     orcid: "https://orcid.org/0000-0003-0703-8960"
     affiliation: "Environmental Hydraulics Institute \"IHCantabria\". Universidad de Cantabria. Santander, Spain."
 title: "NEOPRENE: Neyman-Scott Process Rainfall Emulator"
-version: "0.0.13"
-license: Apache-2.0
+version: "0.99.1"
+license: GPLv3
 repository-code: "https://github.com/IHCantabria/NEOPRENE"
 doi: 10.5281/zenodo.5549811 
 date-released: 2021-10-04
