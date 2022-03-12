@@ -13,6 +13,10 @@ Other papers by the authors where -previous incarnations of- the **NEOPRENE** li
 + Diez-Sierra, J.; del Jesus, M. Subdaily Rainfall Estimation through Daily Rainfall Downscaling Using Random Forests in Spain. Water **2019**, _11_, 125. [https://doi.org/10.3390/w11010125](https://doi.org/10.3390/w11010125)
 + del Jesus, M.; Rinaldo, A.; Rodriguez-Iturbe, I. Point rainfall statistics for ecohydrological analyses derived from satellite integrated rainfall measurements. Water Resources Research **2015**, _51(4)_, 2974-2985. [https://doi.org/10.1002/2015WR016935](https://doi.org/10.1002/2015WR016935)
 
+## Test the library
+
+If you are curious about how the library works or what it can do, I invite you to go to the **Releases** section of this webpage (on the right-hand side of the page) and download the executable file **NEOPRENE-Setup** for your operative system. This executable file will check if Jupyterlab Desktop is installed in your computer. If it is not, it will download the installation program for you to install Jupyterlab. After Jupyterlab is installed, **NEOPRENE-Setup** will launch the example notebooks for you. Then you can test the library and check its functionality in action.
+
 ## Contents
 
 | Directory | Contents |
