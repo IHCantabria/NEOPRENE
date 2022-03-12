@@ -17,7 +17,7 @@
         }
     ],
     "license": {
-        "id": "General Public License v3 (GPLv3)"
+        "id": "GPL-3.0+"
     },
     "title": "NEOPRENE: Neyman-Scott Process Rainfall Emulator",
     "upload_type": "software",
