@@ -92,7 +92,7 @@ class evaluateInd_PSO(object):
         for ii, statistic in enumerate(self.s):
 
             ##Mean
-            if 'mean' statistic:
+            if 'mean' in statistic:
                 a = NSRP_mean(1, landa, mu_c, eta, xi, alpha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e={'e0':a}  
             ##Variance
