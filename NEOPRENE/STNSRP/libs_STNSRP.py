@@ -49,51 +49,40 @@ def calculate_statistics(Data,statistics,temporal_resolution):
 
     """
 
-    statististics_values_real=list()
+    statistics_values_real=list()
     if temporal_resolution=='d':
         t='D'
     elif temporal_resolution=='h':
         t='h'
 
-    if np.sum(['var' in i for i in statistics])>=1:
-        pos=np.where(['var' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
+    for statistic in statistics:
+
+        if 'var' in statistic:
+            h=int(statistic.split("_")[1])
             aux=Data.resample(str(h) + t).agg(pd.Series.sum, min_count=1); 
-            statististics_values_real.append(np.sqrt(np.nanvar(aux))/np.nanmean(aux))
-    if np.sum(['autocorr' in i for i in statistics])>=1:
-        pos=np.where(['autocorr' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            l=int(statistics[ii].split("_")[1])
-            h=int(statistics[ii].split("_")[2])
+            statistics_values_real.append(np.sqrt(np.nanvar(aux))/np.nanmean(aux))
+        if 'autocorr' in statistic:
+            l=int(statistic.split("_")[1])
+            h=int(statistic.split("_")[2])
             aux=Data.resample(str(h) + t).agg(pd.Series.sum, min_count=1); 
             Autocorrelation_aux=aux.autocorr(lag=l) 
             if np.size(Autocorrelation_aux)>1: Autocorrelation_aux=Autocorrelation_aux[0]
-
-            statististics_values_real.append(Autocorrelation_aux)
-    if np.sum(['fih' in i for i in statistics])>=1:
-        pos=np.where(['fih' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
-            statististics_values_real.append(fi_h(Data, h))
-    if np.sum(['fiWW' in i for i in statistics])>=1:
-        pos=np.where(['fiWW' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
-            statististics_values_real.append(fi_WW(Data, h))
-    if np.sum(['fiDD' in i for i in statistics])>=1:
-        pos=np.where(['fiDD' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
-            statististics_values_real.append(fi_DD(Data, h))
-    if np.sum(['M3' in i for i in statistics])>=1:
-        pos=np.where(['M3' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
+            statistics_values_real.append(Autocorrelation_aux)
+        if 'fih' in statistic:
+            h=int(statistic.split("_")[1])
+            statistics_values_real.append(fi_h(Data, h))
+        if 'fiWW' in statistic:
+            h=int(statistic.split("_")[1])
+            statistics_values_real.append(fi_WW(Data, h))
+        if 'fiDD' in statistic:
+            h=int(statistic.split("_")[1])
+            statistics_values_real.append(fi_DD(Data, h))
+        if 'M3' in statistic:
+            h=int(statistic.split("_")[1])
             aux=Data.resample(str(h) + t ).agg(pd.Series.sum, min_count=1);
-            statististics_values_real.append((sp.stats.moment(aux, moment=3, nan_policy='omit'))/(np.nanvar(aux)**(3/2)))
+            statistics_values_real.append((sp.stats.moment(aux, moment=3, nan_policy='omit'))/(np.nanvar(aux)**(3/2)))
 
-    return statististics_values_real
+    return statistics_values_real
     
 
 def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordinates, cross_corr_h, temporal_resolution):
@@ -288,54 +277,41 @@ class evaluateInd_PSO(object):
             alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
             
 
-        d_e={}    
-        ##Variance
-        if np.sum(['var' in i for i in self.s])>=1:
-            pos=np.where(['var' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+        d_e={}
+        for ii, statistic in enumerate(self.s):    
+
+            ##Variance
+            if 'var' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
                     /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-                
-        ##Autocorrelation
-        if np.sum(['autocorr' in i for i in self.s])>=1:
-            pos=np.where(['autocorr' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a    
+            ##Autocorrelation
+            if 'autocorr' in statistic:
                 l=int(self.s[ii].split("_",3)[1])
                 h=int(self.s[ii].split("_",3)[2])
                 a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                     /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-        ##fi_h
-        if np.sum(['fih' in i for i in self.s])>=1:
-            pos=np.where(['fih' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_h
+            if 'fih' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-        ##fi_WW
-        if np.sum(['fiWW' in i for i in self.s])>=1:
-            pos=np.where(['fiWW' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_WW
+            if 'fiWW' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
 
-        ##fi_DD
-        if np.sum(['fiDD' in i for i in self.s])>=1:
-            pos=np.where(['fiDD' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_DD
+            if 'fiDD' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
 
-        ##M3
-        if np.sum(['M3' in i for i in self.s])>=1:
-            pos=np.where(['M3' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##M3
+            if 'M3' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                 /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
@@ -407,53 +383,46 @@ class evaluateInd_PSO(object):
             landa.append(ind[6]); mu_c.append(ind[7]); eta.append(ind[8]); xi.append(1); betha.append(ind[9]);
             alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
         
-        d_e={}    
-        ##Variance
-        if np.sum(['var' in i for i in self.s])>=1:
-            pos=np.where(['var' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+        d_e={}
+        for ii, statistic in enumerate(self.s):    
+
+            ##Variance
+            if 'var' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
                     /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##Autocorrelation
-        if np.sum(['autocorr' in i for i in self.s])>=1:
-            pos=np.where(['autocorr' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a    
+            ##Autocorrelation
+            if 'autocorr' in statistic:
                 l=int(self.s[ii].split("_",3)[1])
                 h=int(self.s[ii].split("_",3)[2])
                 a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                     /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##fi_h
-        if np.sum(['fih' in i for i in self.s])>=1:
-            pos=np.where(['fih' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+            ##fi_h
+            if 'fih' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##fi_WW
-        if np.sum(['fiWW' in i for i in self.s])>=1:
-            pos=np.where(['fiWW' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+            ##fi_WW
+            if 'fiWW' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##fi_DD
-        if np.sum(['fiDD' in i for i in self.s])>=1:
-            pos=np.where(['fiDD' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+
+            ##fi_DD
+            if 'fiDD' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##M3
-        if np.sum(['M3' in i for i in self.s])>=1:
-            pos=np.where(['M3' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+
+            ##M3
+            if 'M3' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                 /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
+
         ##Spatial correlation
         if self.storm_radius==False:
             if np.sum(['cross' in i for i in self.s])>=1:
@@ -463,8 +432,7 @@ class evaluateInd_PSO(object):
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
                     e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
-                        w1=self.w[ii]/11; l=0
-                        #h=int(self.s[ii].split("_",3)[2])
+                        w1=self.w[ii]/11 ; l=0
                         h=int(self.s[ii].split("_")[1])
                         d=dist_aux[jj] 
                         a=NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d)\
@@ -472,6 +440,7 @@ class evaluateInd_PSO(object):
                         e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
                         e_spatial_correlation.append(e_aux)
                         d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
+
         if self.storm_radius==True:
             if np.sum(['cross' in i for i in self.s])>=1:
                 pos=np.where(['cross' in i for i in self.s]); pos=pos[0]
@@ -492,9 +461,8 @@ class evaluateInd_PSO(object):
         
         for k in d_e.keys():
             if isnan(d_e[k]): d_e[k] = 10000
-                
+
         errors=list(); errors.append([d_e[i] for i in d_e.keys()])
-        
         return np.sum(errors)
         
     def compute(self, ind):
@@ -521,48 +489,37 @@ class evaluateInd_PSO(object):
             alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
         
         v={}
-        ##Variance
-        if np.sum(['var' in i for i in self.s])>=1:
-            pos=np.where(['var' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+        for ii, statistic in enumerate(self.s):
+            ##Variance
+            if 'var' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
                     /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
                 v['v' + str(ii)]=a
-        ##Autocorrelation
-        if np.sum(['autocorr' in i for i in self.s])>=1:
-            pos=np.where(['autocorr' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##Autocorrelation
+            if 'autocorr' in statistic:
                 l=int(self.s[ii].split("_",3)[1])
                 h=int(self.s[ii].split("_",3)[2])
                 a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                     /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                 v['v' + str(ii)]=a
-        ##fi_h
-        if np.sum(['fih' in i for i in self.s])>=1:
-            pos=np.where(['fih' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_h
+            if 'fih' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
                 v['v' + str(ii)]=a
-        ##fi_WW
-        if np.sum(['fiWW' in i for i in self.s])>=1:
-            pos=np.where(['fiWW' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_WW
+            if 'fiWW' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
                 v['v' + str(ii)]=a
-        ##fi_DD
-        if np.sum(['fiDD' in i for i in self.s])>=1:
-            pos=np.where(['fiDD' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_DD
+            if 'fiDD' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
                 v['v' + str(ii)]=a
-        ##M3
-        if np.sum(['M3' in i for i in self.s])>=1:
-            pos=np.where(['M3' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##M3
+            if 'M3' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                 /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
