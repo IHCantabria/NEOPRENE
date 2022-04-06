@@ -31,7 +31,6 @@ def calculate_statistics(Data,statistics,temporal_resolution):
     The statistics that can be calculated are:
     statistics=[mean, var_h, autocorr_l_h, fih_h, fiWW_h, fiDD_h, M3_h]
     (l=lag, h=aggregation levels)
-
     """
 
     statistics_values_real=list()
@@ -46,31 +45,30 @@ def calculate_statistics(Data,statistics,temporal_resolution):
             statistics_values_real.append(np.nanmean(Data))
         if 'var' in statistic:
             h=int(statistic.split("_",1)[1])
-            aux=Data.resample(str(h) + t).agg(pd.Series.sum, min_count=1); 
+            aux=Data.resample(str(h) + t).sum(); 
             statistics_values_real.append(np.nanvar(aux))
         if 'autocorr' in statistic:
             l=int(statistic.split("_",3)[1])
             h=int(statistic.split("_",3)[2])
-            aux=Data.resample(str(h) + t).agg(pd.Series.sum, min_count=1); 
-            Autocorrelation_aux=aux.autocorr(lag=l) 
+            aux=Data.resample(str(h) + t).sum(); 
+            Autocorrelation_aux=aux[aux.columns[0]].autocorr(lag=l) 
             if np.size(Autocorrelation_aux)>1: Autocorrelation_aux=Autocorrelation_aux[0] 
             statistics_values_real.append(Autocorrelation_aux)
         if 'fih' in statistic:
             h=int(statistic.split("_",1)[1])
-            statistics_values_real.append(fi_h(Data, h))
+            statistics_values_real.append(fi_h(Data, h, t))
         if 'fiWW' in statistic:
             h=int(statistic.split("_",1)[1])
-            statistics_values_real.append(fi_WW(Data, h))
+            statistics_values_real.append(fi_WW(Data, h, t))
         if 'fiDD' in statistic:
             h=int(statistic.split("_",1)[1])
-            statistics_values_real.append(fi_DD(Data, h))
+            statistics_values_real.append(fi_DD(Data, h, t))
         if 'M3' in statistic:
             h=int(statistic.split("_",1)[1])
-            aux=Data.resample(str(h) + t ).agg(pd.Series.sum, min_count=1);
-            statistics_values_real.append(sp.stats.moment(aux, moment=3, nan_policy='omit'))
+            aux=Data.resample(str(h) + t).sum();
+            statistics_values_real.append(sp.stats.moment(aux, moment=3, nan_policy='omit')[0])
     
     return statistics_values_real
-
 
 
 class evaluateInd_PSO(object):

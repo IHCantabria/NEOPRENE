@@ -36,21 +36,22 @@ def statistics_from_serie(statistics_name, Seasonality_str, Seasonality, tempora
              
         if len(Seasonality)==12:
             ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
-            Datos['Estacionalidad']=Datos.loc[:,'Rain']*np.nan
-            pos=np.where(Datos.index.month == prii); pos=pos[0]
-            Datos['Estacionalidad'][pos]=Datos['Rain'][pos]
-            Pluvio_GS = Datos['Estacionalidad'][Datos['Estacionalidad']>=0]
-            Datos=Pluvio_GS
+            pos_s = np.where(Datos_.index.month == prii)[0]
+            pos_r = np.where(Datos_.values >= 0)[0]
+            pos = np.intersect1d(pos_s, pos_r)
+            Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+            Datos = pd.DataFrame (Datos_['Rain'].iloc[pos].values, index = Datos_time_period)
             
         else:
             ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
-            Datos['Estacionalidad'] = Datos.loc[:,'Rain']*np.nan
+            pos = []
             for i, ii in enumerate(prii):
-                pos=np.where(Datos.index.month == ii); pos=pos[0]
-                Datos['Estacionalidad'][pos]=Datos['Rain'][pos]
-            Pluvio_GS = Datos['Estacionalidad'][Datos['Estacionalidad']>=0]
-            Datos=Pluvio_GS
-        
+                pos_s = np.where(Datos_.index.month == ii)[0]
+                pos_r = np.where(Datos_.values >= 0)[0]
+                pos.append(np.intersect1d(pos_s, pos_r))
+            pos = [item for sublist in pos for item in sublist]
+            Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+            Datos = pd.DataFrame (Datos_['Rain'].iloc[pos].values, index = Datos_time_period)
         
             ## We calculate the defined statistics to be adjusted and I enter them in a dataframe.
         statististics_values = calculate_statistics(Datos,statistics_name, temporal_resolution)

@@ -158,7 +158,7 @@ class Calibration(object):
                 print('')
                 print('Fitting the months = ' + str(prii))
                 print('')
-            error=0.5
+            error=0.001
             error_initializations=list()
             parameters_initializations=list()
             n_i=0

@@ -59,28 +59,28 @@ def calculate_statistics(Data,statistics,temporal_resolution):
 
         if 'var' in statistic:
             h=int(statistic.split("_")[1])
-            aux=Data.resample(str(h) + t).agg(pd.Series.sum, min_count=1); 
+            aux=Data.resample(str(h) + t).sum(); 
             statistics_values_real.append(np.sqrt(np.nanvar(aux))/np.nanmean(aux))
         if 'autocorr' in statistic:
             l=int(statistic.split("_")[1])
             h=int(statistic.split("_")[2])
-            aux=Data.resample(str(h) + t).agg(pd.Series.sum, min_count=1); 
-            Autocorrelation_aux=aux.autocorr(lag=l) 
+            aux=Data.resample(str(h) + t).sum(); 
+            Autocorrelation_aux=aux[aux.columns[0]].autocorr(lag=l) 
             if np.size(Autocorrelation_aux)>1: Autocorrelation_aux=Autocorrelation_aux[0]
             statistics_values_real.append(Autocorrelation_aux)
         if 'fih' in statistic:
             h=int(statistic.split("_")[1])
-            statistics_values_real.append(fi_h(Data, h))
+            statistics_values_real.append(fi_h(Data, h, t))
         if 'fiWW' in statistic:
             h=int(statistic.split("_")[1])
-            statistics_values_real.append(fi_WW(Data, h))
+            statistics_values_real.append(fi_WW(Data, h, t))
         if 'fiDD' in statistic:
             h=int(statistic.split("_")[1])
-            statistics_values_real.append(fi_DD(Data, h))
+            statistics_values_real.append(fi_DD(Data, h, t))
         if 'M3' in statistic:
             h=int(statistic.split("_")[1])
-            aux=Data.resample(str(h) + t ).agg(pd.Series.sum, min_count=1);
-            statistics_values_real.append((sp.stats.moment(aux, moment=3, nan_policy='omit'))/(np.nanvar(aux)**(3/2)))
+            aux=Data.resample(str(h) + t).sum();
+            statistics_values_real.append((sp.stats.moment(aux, moment=3, nan_policy='omit')[0])/(np.nanvar(aux)**(3/2)))
 
     return statistics_values_real
     

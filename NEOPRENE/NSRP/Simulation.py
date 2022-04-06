@@ -93,26 +93,30 @@ class Simulation(object):
 
             if len(self.hiperparams.Seasonality)==12:
              
-                Data['Seasonality']=Data['Rain']*np.nan
-                pos=np.where(Data.index.month == prii); pos=pos[0]
-                Data['Seasonality'].iloc[pos]=Data['Rain'].iloc[pos]
-                Pluvio_GS = Data['Seasonality'][Data['Seasonality']>=0]
-                Pluvio_GS[Pluvio_GS<0.001]=0
-                Data=Pluvio_GS.astype(float)
+                pos_s = np.where(Data.index.month == prii)[0]
+                pos_r = np.where(Data.values >= 0)[0]
+                pos = np.intersect1d(pos_s, pos_r)
+                Data_time_period  = pd.period_range('1800', periods=len(pos), freq=self.hiperparams.temporal_resolution)
+                Data_m = pd.DataFrame (Data['Rain'].iloc[pos].values, index = Data_time_period)
+                Data_m[Data_m<0.001]=0
+                Data_m = Data_m.astype(float)
+
                 
             else:
-  
-                Data['Seasonality']=Data['Rain']*np.nan
+
+                pos = []
                 for i, ii in enumerate(prii):
-                    pos=np.where(Data.index.month == ii); pos=pos[0]
-                    Data['Seasonality'].iloc[pos]=Data['Rain'].iloc[pos]
-                Pluvio_GS = Data['Seasonality'][Data['Seasonality']>=0]
-                Pluvio_GS[Pluvio_GS<0.001]=0
-                Data=Pluvio_GS.astype(float)
+                    pos_s = np.where(Data.index.month == ii)[0]
+                    pos_r = np.where(Data.values >= 0)[0]
+                    pos.append(np.intersect1d(pos_s, pos_r))
+                pos = [item for sublist in pos for item in sublist]
+                Data_time_period  = pd.period_range('1800', periods=len(pos), freq=self.hiperparams.temporal_resolution)
+                Data_m = pd.DataFrame (Data['Rain'].iloc[pos].values, index = Data_time_period)
+                Data_m[Data_m<0.001]=0
+                Data_m = Data_m.astype(float)
 
 
-
-            statististics_values_synthetic = calculate_statistics(Data,self.hiperparams.statistics_name,self.hiperparams.temporal_resolution)
+            statististics_values_synthetic = calculate_statistics(Data_m,self.hiperparams.statistics_name,self.hiperparams.temporal_resolution)
             statististics_sim_df.loc[:,str(prii)]=statististics_values_synthetic  
 
         #statististics_sim_df=allmonths(statististics_sim_df)
