@@ -197,12 +197,20 @@ def cross_correlation(Stations, Series, funcion, divisions, coordinates):
     ydata = Distance_correlation['Corr'].values
     
     cross_correlation.Distance_correlation = Distance_correlation
-    
-    popt, pcov = curve_fit(func, xdata, ydata, maxfev=1000)
-    
-    
-    average_points
-    Mean_correlation=func(average_points, popt[0], popt[1], popt[2])
+    try:
+        def func(x, a, b, c):
+            """Function to which the spatial correlation values are fitted"""
+            return a * np.exp(-b * x) + c
+        popt, pcov = curve_fit(func, xdata, ydata, maxfev=10000)#Sometimes the function does not fit to de data. Improve.
+        Mean_correlation=func(average_points, popt[0], popt[1], popt[2])
+    except Exception as e:
+        print('No exponential cross-correlation')
+        def func(x, a, b):
+            """Function to which the spatial correlation values are fitted"""
+            return (a * x) + b
+        popt, pcov = curve_fit(func, xdata, ydata, maxfev=10000)#Sometimes the function does not fit to de data. Improve.
+        Mean_correlation=func(average_points, popt[0], popt[1])
+
     
     return average_points, Mean_correlation
 
@@ -626,7 +634,7 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
 
     ipsilon = Params_month[Params_month.index=='ipsilon'].values[0]
 
-    Number_cells_per_storm = ipsilon-1 ##Random poisson mean
+    Number_cells_per_storm = ipsilon##Random poisson mean
 
     if process=='normal':
         eta = Params_month[Params_month.index=='eta'].values[0]
@@ -791,7 +799,7 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
                 pos_teta=(np.argmin(np.sqrt((XX-Rand_x[j])**2 + (YY-Rand_y[j])**2)))
                 name_station=Df_xi.columns[pos_teta]
 
-                Intensity_cell_sim=np.random.exponential(scale=1/Df_xi[name_station][monthss[0]],\
+                Intensity_cell_sim=np.random.exponential(scale=1/Df_xi[name_station].loc[monthss[0]],\
                                                               size=1)
 
                 if temporal_resolution=='d':
