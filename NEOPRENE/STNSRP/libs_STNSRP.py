@@ -118,6 +118,46 @@ def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordi
 
     return cross_corr_stationality, cross_corr_dist_stationality
 
+def cross_corr_stationality_f_old(time_series, Seasonality, Attributes, func, coordinates, cross_corr_h, temporal_resolution):
+    
+    cross_corr_stationality={}
+    cross_corr_dist_stationality={}
+
+    for i in Seasonality:
+        cross_corr=pd.DataFrame()
+
+        for pri, prii in enumerate(Seasonality):
+            Datos_=time_series.copy(); Datos_[Datos_<0]=np.nan
+                 
+            if len(Seasonality)==12:
+                ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
+                pos_s = np.where(Datos_.index.month == prii)[0]
+                pos_r = np.where(Datos_.values >= 0)[0]
+                pos = np.intersect1d(pos_s, pos_r)
+                Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+                Datos = pd.DataFrame (Datos_.iloc[pos].values, index = Datos_time_period, columns = Datos_.columns)
+                
+            else:
+                ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
+                pos = []
+                for i, ii in enumerate(prii):
+                    pos_s = np.where(Datos_.index.month == ii)[0]
+                    pos_r = np.where(Datos_.values >= 0)[0]
+                    pos.append(np.intersect1d(pos_s, pos_r))
+                pos = [item for sublist in pos for item in sublist]
+                Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+                Datos = pd.DataFrame (Datos_.iloc[pos].values, index = Datos_time_period, columns = Datos_.columns)
+        
+                
+        h=int(cross_corr_h.split("_")[1])
+        aux_month=Datos.resample(str(h) + temporal_resolution).sum()
+
+        cross_corr['dist'], cross_corr['cross_corr'] = cross_correlation(Attributes, aux_month, func, 11, coordinates)
+        cross_corr_stationality[i] = cross_corr
+        cross_corr_dist_stationality[i] = cross_correlation_dist(Attributes, aux_month, func, coordinates)
+
+    return cross_corr_stationality, cross_corr_dist_stationality
+
 def cross_correlation_dist(Stations, Series, funcion, coordinates):
     Spatial_correlation=pd.DataFrame(index=Series.columns, columns=Series.columns)
     Distance=pd.DataFrame(index=Series.columns, columns=Series.columns)
@@ -155,7 +195,6 @@ def cross_correlation_dist(Stations, Series, funcion, coordinates):
 def cross_correlation(Stations, Series, funcion, divisions, coordinates):
     Spatial_correlation=pd.DataFrame(index=Series.columns, columns=Series.columns)
     Distance=pd.DataFrame(index=Series.columns, columns=Series.columns)
-
     for i, ii in enumerate(Spatial_correlation.index):
         x1=Stations[Stations['ID']==ii].X.values; x1=x1[0]
         y1=Stations[Stations['ID']==ii].Y.values; y1=y1[0]
@@ -743,8 +782,8 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
 
         if np.size(monthss)==1:
             monthss=[monthss]
-        else:
-            monthss=[perio+1]
+        #else:
+        #    monthss=[perio+1]
 
         while time_lapso < time_end:
             s = np.random.exponential(Storm_origin[monthss[0]-1], 1)
@@ -799,8 +838,10 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
                 pos_teta=(np.argmin(np.sqrt((XX-Rand_x[j])**2 + (YY-Rand_y[j])**2)))
                 name_station=Df_xi.columns[pos_teta]
 
-                Intensity_cell_sim=np.random.exponential(scale=1/Df_xi[name_station].loc[monthss[0]],\
-                                                              size=1)
+                if np.size(monthss)==1:
+                    Intensity_cell_sim=np.random.exponential(scale=1/Df_xi[name_station].loc[Seasonality[perio]],size=1)
+                else:
+                    Intensity_cell_sim=np.random.exponential(scale=1/Df_xi[name_station].loc[Seasonality[perio][0]],size=1)
 
                 if temporal_resolution=='d':
                     time1_cell=time1 + datetime.timedelta(days=Dist_hours_cell_sim[j])   
