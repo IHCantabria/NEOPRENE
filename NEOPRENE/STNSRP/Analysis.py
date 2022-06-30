@@ -307,7 +307,7 @@ class Analysis(object):
         self.figures.append(exceedence_probability(Serie_Observed.mean(axis=1), Serie_Simulated.mean(axis=1), self.SIM.temporal_resolution))
         self.names_figures.append('Exceedence_probability')
         
-    def figure_correlation_fig(self):
+    def correlation_fig(self):
         [figures,names] = figure_correlation(self.CAL,self.SIM)
         
         for f in range(0, len(names)):

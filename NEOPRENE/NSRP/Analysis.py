@@ -251,7 +251,7 @@ class Analysis(object):
         self.figures.append(exceedence_probability(Serie_Observed.mean(axis=1), Serie_Simulated.mean(axis=1), self.SIM.temporal_resolution))
         self.names_figures.append('Exceedence_probability')
         
-    def figure_disaggregation_fig(self,hourly_disaggregation,daily_disaggregation,real_series,yearmin,yearmax):
+    def disaggregation_fig(self,hourly_disaggregation,daily_disaggregation,real_series,yearmin,yearmax):
         self.figures.append(figure_disaggregation(hourly_disaggregation,daily_disaggregation,real_series,yearmin,yearmax))
         self.names_figures.append('Serie_disaggregation')
         
