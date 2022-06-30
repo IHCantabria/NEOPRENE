@@ -48,7 +48,7 @@ def statistics_from_serie(statistics_name, Seasonality_str, Seasonality, tempora
     
     statistics_name_no_cross = [sn for sn in statistics_name if not 'crosscorr' in sn]# delete cross corr from statistcis_name
 
-    statististics_dataframe=pd.DataFrame(index=statistics_name_no_cross,columns=Seasonality_str)
+    statistics_dataframe=pd.DataFrame(index=statistics_name_no_cross,columns=Seasonality_str)
     Datos_ = pd.DataFrame(index=time_series.index,columns = ['Rain'])
     Datos_.loc[:,'Rain'] = time_series.iloc[:,0].values
         
@@ -57,27 +57,29 @@ def statistics_from_serie(statistics_name, Seasonality_str, Seasonality, tempora
              
         if len(Seasonality)==12:
             ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
-            Datos['Seasonality']=Datos.loc[:,'Rain']*np.nan
-            pos=np.where(Datos.index.month == prii); pos=pos[0]
-            Datos['Seasonality'].iloc[pos]=Datos['Rain'][pos]
-            Pluvio_GS = Datos['Seasonality'][Datos['Seasonality']>=0]
-            Datos=Pluvio_GS
+            pos_s = np.where(Datos_.index.month == prii)[0]
+            pos_r = np.where(Datos_.values >= 0)[0]
+            pos = np.intersect1d(pos_s, pos_r)
+            Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+            Datos = pd.DataFrame (Datos_['Rain'].iloc[pos].values, index = Datos_time_period)
             
         else:
             ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
-            Datos['Seasonality'] = Datos.loc[:,'Rain']*np.nan
+            pos = []
             for i, ii in enumerate(prii):
-                pos=np.where(Datos.index.month == ii); pos=pos[0]
-                Datos['Seasonality'].iloc[pos]=Datos['Rain'][pos]
-            Pluvio_GS = Datos['Seasonality'][Datos['Seasonality']>=0]
-            Datos=Pluvio_GS
+                pos_s = np.where(Datos_.index.month == ii)[0]
+                pos_r = np.where(Datos_.values >= 0)[0]
+                pos.append(np.intersect1d(pos_s, pos_r))
+            pos = [item for sublist in pos for item in sublist]
+            Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+            Datos = pd.DataFrame (Datos_['Rain'].iloc[pos].values, index = Datos_time_period)
         
         
             ## We calculate the defined statistics to be adjusted and I enter them in a dataframe.
         
-        statististics_values = calculate_statistics(Datos,statistics_name_no_cross, temporal_resolution)
-        statististics_dataframe.loc[:,str(prii)]=statististics_values
-    return statististics_dataframe
+        statistics_values = calculate_statistics(Datos,statistics_name_no_cross, temporal_resolution)
+        statistics_dataframe.loc[:,str(prii)]=statistics_values
+    return statistics_dataframe
 
 def statistics_from_several_series(statistics_name, Seasonality_str, Seasonality, temporal_resolution, time_series):
     statistics_gauges={}
