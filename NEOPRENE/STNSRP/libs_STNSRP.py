@@ -49,51 +49,40 @@ def calculate_statistics(Data,statistics,temporal_resolution):
 
     """
 
-    statististics_values_real=list()
+    statistics_values_real=list()
     if temporal_resolution=='d':
         t='D'
     elif temporal_resolution=='h':
         t='h'
 
-    if np.sum(['var' in i for i in statistics])>=1:
-        pos=np.where(['var' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
-            aux=Data.resample(str(h) + t).agg(pd.Series.sum, min_count=1); 
-            statististics_values_real.append(np.sqrt(np.nanvar(aux))/np.nanmean(aux))
-    if np.sum(['autocorr' in i for i in statistics])>=1:
-        pos=np.where(['autocorr' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            l=int(statistics[ii].split("_")[1])
-            h=int(statistics[ii].split("_")[2])
-            aux=Data.resample(str(h) + t).agg(pd.Series.sum, min_count=1); 
-            Autocorrelation_aux=aux.autocorr(lag=l) 
+    for statistic in statistics:
+
+        if 'var' in statistic:
+            h=int(statistic.split("_")[1])
+            aux=Data.resample(str(h) + t).sum(); 
+            statistics_values_real.append(np.sqrt(np.nanvar(aux))/np.nanmean(aux))
+        if 'autocorr' in statistic:
+            l=int(statistic.split("_")[1])
+            h=int(statistic.split("_")[2])
+            aux=Data.resample(str(h) + t).sum(); 
+            Autocorrelation_aux=aux[aux.columns[0]].autocorr(lag=l) 
             if np.size(Autocorrelation_aux)>1: Autocorrelation_aux=Autocorrelation_aux[0]
+            statistics_values_real.append(Autocorrelation_aux)
+        if 'fih' in statistic:
+            h=int(statistic.split("_")[1])
+            statistics_values_real.append(fi_h(Data, h, t))
+        if 'fiWW' in statistic:
+            h=int(statistic.split("_")[1])
+            statistics_values_real.append(fi_WW(Data, h, t))
+        if 'fiDD' in statistic:
+            h=int(statistic.split("_")[1])
+            statistics_values_real.append(fi_DD(Data, h, t))
+        if 'M3' in statistic:
+            h=int(statistic.split("_")[1])
+            aux=Data.resample(str(h) + t).sum();
+            statistics_values_real.append((sp.stats.moment(aux, moment=3, nan_policy='omit')[0])/(np.nanvar(aux)**(3/2)))
 
-            statististics_values_real.append(Autocorrelation_aux)
-    if np.sum(['fih' in i for i in statistics])>=1:
-        pos=np.where(['fih' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
-            statististics_values_real.append(fi_h(Data, h))
-    if np.sum(['fiWW' in i for i in statistics])>=1:
-        pos=np.where(['fiWW' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
-            statististics_values_real.append(fi_WW(Data, h))
-    if np.sum(['fiDD' in i for i in statistics])>=1:
-        pos=np.where(['fiDD' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
-            statististics_values_real.append(fi_DD(Data, h))
-    if np.sum(['M3' in i for i in statistics])>=1:
-        pos=np.where(['M3' in i for i in statistics]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            h=int(statistics[ii].split("_")[1])
-            aux=Data.resample(str(h) + t ).agg(pd.Series.sum, min_count=1);
-            statististics_values_real.append((sp.stats.moment(aux, moment=3, nan_policy='omit'))/(np.nanvar(aux)**(3/2)))
-
-    return statististics_values_real
+    return statistics_values_real
     
 
 def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordinates, cross_corr_h, temporal_resolution):
@@ -124,6 +113,46 @@ def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordi
 
         cross_corr['dist'], cross_corr['cross_corr'] = cross_correlation(Attributes, aux_month, func, 11, coordinates)
         
+        cross_corr_stationality[i] = cross_corr
+        cross_corr_dist_stationality[i] = cross_correlation_dist(Attributes, aux_month, func, coordinates)
+
+    return cross_corr_stationality, cross_corr_dist_stationality
+
+def cross_corr_stationality_f_old(time_series, Seasonality, Attributes, func, coordinates, cross_corr_h, temporal_resolution):
+    
+    cross_corr_stationality={}
+    cross_corr_dist_stationality={}
+
+    for i in Seasonality:
+        cross_corr=pd.DataFrame()
+
+        for pri, prii in enumerate(Seasonality):
+            Datos_=time_series.copy(); Datos_[Datos_<0]=np.nan
+                 
+            if len(Seasonality)==12:
+                ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
+                pos_s = np.where(Datos_.index.month == prii)[0]
+                pos_r = np.where(Datos_.values >= 0)[0]
+                pos = np.intersect1d(pos_s, pos_r)
+                Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+                Datos = pd.DataFrame (Datos_.iloc[pos].values, index = Datos_time_period, columns = Datos_.columns)
+                
+            else:
+                ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
+                pos = []
+                for i, ii in enumerate(prii):
+                    pos_s = np.where(Datos_.index.month == ii)[0]
+                    pos_r = np.where(Datos_.values >= 0)[0]
+                    pos.append(np.intersect1d(pos_s, pos_r))
+                pos = [item for sublist in pos for item in sublist]
+                Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+                Datos = pd.DataFrame (Datos_.iloc[pos].values, index = Datos_time_period, columns = Datos_.columns)
+        
+                
+        h=int(cross_corr_h.split("_")[1])
+        aux_month=Datos.resample(str(h) + temporal_resolution).sum()
+
+        cross_corr['dist'], cross_corr['cross_corr'] = cross_correlation(Attributes, aux_month, func, 11, coordinates)
         cross_corr_stationality[i] = cross_corr
         cross_corr_dist_stationality[i] = cross_correlation_dist(Attributes, aux_month, func, coordinates)
 
@@ -166,7 +195,6 @@ def cross_correlation_dist(Stations, Series, funcion, coordinates):
 def cross_correlation(Stations, Series, funcion, divisions, coordinates):
     Spatial_correlation=pd.DataFrame(index=Series.columns, columns=Series.columns)
     Distance=pd.DataFrame(index=Series.columns, columns=Series.columns)
-
     for i, ii in enumerate(Spatial_correlation.index):
         x1=Stations[Stations['ID']==ii].X.values; x1=x1[0]
         y1=Stations[Stations['ID']==ii].Y.values; y1=y1[0]
@@ -208,12 +236,20 @@ def cross_correlation(Stations, Series, funcion, divisions, coordinates):
     ydata = Distance_correlation['Corr'].values
     
     cross_correlation.Distance_correlation = Distance_correlation
-    
-    popt, pcov = curve_fit(func, xdata, ydata, maxfev=1000)
-    
-    
-    average_points
-    Mean_correlation=func(average_points, popt[0], popt[1], popt[2])
+    try:
+        def func(x, a, b, c):
+            """Function to which the spatial correlation values are fitted"""
+            return a * np.exp(-b * x) + c
+        popt, pcov = curve_fit(func, xdata, ydata, maxfev=10000)#Sometimes the function does not fit to de data. Improve.
+        Mean_correlation=func(average_points, popt[0], popt[1], popt[2])
+    except Exception as e:
+        print('No exponential cross-correlation')
+        def func(x, a, b):
+            """Function to which the spatial correlation values are fitted"""
+            return (a * x) + b
+        popt, pcov = curve_fit(func, xdata, ydata, maxfev=10000)#Sometimes the function does not fit to de data. Improve.
+        Mean_correlation=func(average_points, popt[0], popt[1])
+
     
     return average_points, Mean_correlation
 
@@ -288,54 +324,41 @@ class evaluateInd_PSO(object):
             alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
             
 
-        d_e={}    
-        ##Variance
-        if np.sum(['var' in i for i in self.s])>=1:
-            pos=np.where(['var' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+        d_e={}
+        for ii, statistic in enumerate(self.s):    
+
+            ##Variance
+            if 'var' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
                     /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-                
-        ##Autocorrelation
-        if np.sum(['autocorr' in i for i in self.s])>=1:
-            pos=np.where(['autocorr' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a    
+            ##Autocorrelation
+            if 'autocorr' in statistic:
                 l=int(self.s[ii].split("_",3)[1])
                 h=int(self.s[ii].split("_",3)[2])
                 a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                     /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-        ##fi_h
-        if np.sum(['fih' in i for i in self.s])>=1:
-            pos=np.where(['fih' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_h
+            if 'fih' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-        ##fi_WW
-        if np.sum(['fiWW' in i for i in self.s])>=1:
-            pos=np.where(['fiWW' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_WW
+            if 'fiWW' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
 
-        ##fi_DD
-        if np.sum(['fiDD' in i for i in self.s])>=1:
-            pos=np.where(['fiDD' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_DD
+            if 'fiDD' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
 
-        ##M3
-        if np.sum(['M3' in i for i in self.s])>=1:
-            pos=np.where(['M3' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##M3
+            if 'M3' in statistic:
                 h=int(self.s[ii].split("_",2)[1])
                 a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                 /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
@@ -407,53 +430,46 @@ class evaluateInd_PSO(object):
             landa.append(ind[6]); mu_c.append(ind[7]); eta.append(ind[8]); xi.append(1); betha.append(ind[9]);
             alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
         
-        d_e={}    
-        ##Variance
-        if np.sum(['var' in i for i in self.s])>=1:
-            pos=np.where(['var' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+        d_e={}
+        for ii, statistic in enumerate(self.s):    
+
+            ##Variance
+            if 'var' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
                     /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##Autocorrelation
-        if np.sum(['autocorr' in i for i in self.s])>=1:
-            pos=np.where(['autocorr' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a    
+            ##Autocorrelation
+            if 'autocorr' in statistic:
                 l=int(self.s[ii].split("_",3)[1])
                 h=int(self.s[ii].split("_",3)[2])
                 a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                     /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##fi_h
-        if np.sum(['fih' in i for i in self.s])>=1:
-            pos=np.where(['fih' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+            ##fi_h
+            if 'fih' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##fi_WW
-        if np.sum(['fiWW' in i for i in self.s])>=1:
-            pos=np.where(['fiWW' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+            ##fi_WW
+            if 'fiWW' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##fi_DD
-        if np.sum(['fiDD' in i for i in self.s])>=1:
-            pos=np.where(['fiDD' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+
+            ##fi_DD
+            if 'fiDD' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-        ##M3
-        if np.sum(['M3' in i for i in self.s])>=1:
-            pos=np.where(['M3' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
-                h=int(self.s[ii].split("_",1)[1])
+
+            ##M3
+            if 'M3' in statistic:
+                h=int(self.s[ii].split("_",2)[1])
                 a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                 /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
                 a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
+
         ##Spatial correlation
         if self.storm_radius==False:
             if np.sum(['cross' in i for i in self.s])>=1:
@@ -463,8 +479,7 @@ class evaluateInd_PSO(object):
                     dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
                     e_spatial_correlation=list()
                     for jj in range(len(cross_corr_aux)):
-                        w1=self.w[ii]/11; l=0
-                        #h=int(self.s[ii].split("_",3)[2])
+                        w1=self.w[ii]/11 ; l=0
                         h=int(self.s[ii].split("_")[1])
                         d=dist_aux[jj] 
                         a=NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d)\
@@ -472,6 +487,7 @@ class evaluateInd_PSO(object):
                         e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
                         e_spatial_correlation.append(e_aux)
                         d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
+
         if self.storm_radius==True:
             if np.sum(['cross' in i for i in self.s])>=1:
                 pos=np.where(['cross' in i for i in self.s]); pos=pos[0]
@@ -492,9 +508,8 @@ class evaluateInd_PSO(object):
         
         for k in d_e.keys():
             if isnan(d_e[k]): d_e[k] = 10000
-                
+
         errors=list(); errors.append([d_e[i] for i in d_e.keys()])
-        
         return np.sum(errors)
         
     def compute(self, ind):
@@ -521,48 +536,37 @@ class evaluateInd_PSO(object):
             alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
         
         v={}
-        ##Variance
-        if np.sum(['var' in i for i in self.s])>=1:
-            pos=np.where(['var' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+        for ii, statistic in enumerate(self.s):
+            ##Variance
+            if 'var' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
                     /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
                 v['v' + str(ii)]=a
-        ##Autocorrelation
-        if np.sum(['autocorr' in i for i in self.s])>=1:
-            pos=np.where(['autocorr' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##Autocorrelation
+            if 'autocorr' in statistic:
                 l=int(self.s[ii].split("_",3)[1])
                 h=int(self.s[ii].split("_",3)[2])
                 a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                     /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
                 v['v' + str(ii)]=a
-        ##fi_h
-        if np.sum(['fih' in i for i in self.s])>=1:
-            pos=np.where(['fih' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_h
+            if 'fih' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
                 v['v' + str(ii)]=a
-        ##fi_WW
-        if np.sum(['fiWW' in i for i in self.s])>=1:
-            pos=np.where(['fiWW' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_WW
+            if 'fiWW' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
                 v['v' + str(ii)]=a
-        ##fi_DD
-        if np.sum(['fiDD' in i for i in self.s])>=1:
-            pos=np.where(['fiDD' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##fi_DD
+            if 'fiDD' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
                 v['v' + str(ii)]=a
-        ##M3
-        if np.sum(['M3' in i for i in self.s])>=1:
-            pos=np.where(['M3' in i for i in self.s]); pos=pos[0]
-            for i, ii in enumerate(pos):
+            ##M3
+            if 'M3' in statistic:
                 h=int(self.s[ii].split("_",1)[1])
                 a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
                 /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
@@ -669,7 +673,7 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
 
     ipsilon = Params_month[Params_month.index=='ipsilon'].values[0]
 
-    Number_cells_per_storm = ipsilon-1 ##Random poisson mean
+    Number_cells_per_storm = ipsilon##Random poisson mean
 
     if process=='normal':
         eta = Params_month[Params_month.index=='eta'].values[0]
@@ -778,8 +782,8 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
 
         if np.size(monthss)==1:
             monthss=[monthss]
-        else:
-            monthss=[perio+1]
+        #else:
+        #    monthss=[perio+1]
 
         while time_lapso < time_end:
             s = np.random.exponential(Storm_origin[monthss[0]-1], 1)
@@ -834,8 +838,10 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
                 pos_teta=(np.argmin(np.sqrt((XX-Rand_x[j])**2 + (YY-Rand_y[j])**2)))
                 name_station=Df_xi.columns[pos_teta]
 
-                Intensity_cell_sim=np.random.exponential(scale=1/Df_xi[name_station][monthss[0]],\
-                                                              size=1)
+                if np.size(monthss)==1:
+                    Intensity_cell_sim=np.random.exponential(scale=1/Df_xi[name_station].loc[Seasonality[perio]],size=1)
+                else:
+                    Intensity_cell_sim=np.random.exponential(scale=1/Df_xi[name_station].loc[Seasonality[perio][0]],size=1)
 
                 if temporal_resolution=='d':
                     time1_cell=time1 + datetime.timedelta(days=Dist_hours_cell_sim[j])   

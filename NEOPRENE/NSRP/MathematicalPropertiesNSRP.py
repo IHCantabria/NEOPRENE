@@ -120,8 +120,12 @@ def moving_average(a, n) :
     return ret[n - 1:] / n
     
     
-def fi_h(Datos, h):
-    return np.sum(moving_average(Datos.values, h)<=0.1)/(np.sum(Datos.values>=0))
+def fi_h(Datos, h, temporal_resolution):
+    if temporal_resolution == 'D':
+        tt = 0.1
+    elif temporal_resolution == 'h':    
+        tt = 0.001
+    return np.sum(moving_average(Datos.values, h)<=tt)/(np.sum(Datos.values>=0))
 
 
 def NSRP_fi_DD(h, landa, ipsilon, eta, betha, alpha_p):
@@ -142,16 +146,16 @@ def NSRP_fi_WW(h, landa, ipsilon, eta, betha, alpha_p):
     return result
 
 
-def fi_DD(Datos, h):
+def fi_DD(Datos, h, temporal_resolution):
     """(7, 8, 9). Cowperwait , 1995. Stochastic point process modelling of rainfall. I. 
     single-site fitting and validation. NSRP"""
-    return fi_h(Datos, 2*h)/fi_h(Datos, h)
+    return fi_h(Datos, 2*h, temporal_resolution)/fi_h(Datos, h, temporal_resolution)
     
     
-def fi_WW(Datos, h):
+def fi_WW(Datos, h, temporal_resolution):
     """(7, 8, 9). Cowperwait , 1995. Stochastic point process modelling of rainfall. I. 
     single-site fitting and validation. NSRP"""
-    return (1 - 2*fi_h(Datos, h)+fi_h(Datos, 2*h))/(1-fi_h(Datos, h))
+    return (1 - 2*fi_h(Datos, h, temporal_resolution)+fi_h(Datos, 2*h, temporal_resolution))/(1-fi_h(Datos, h, temporal_resolution))
 
 
 def f_eta_beta_h(neta, beta, h):

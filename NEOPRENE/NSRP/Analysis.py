@@ -134,7 +134,9 @@ def disaggregation_rainfall(x_series, y_series):
     #y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
     #results=x_series.resample('h').agg(pd.Series.sum, min_count=1)*np.nan
     
-    y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
+    y_series_daily = pd.DataFrame(y_series.groupby([(y_series.index.year),(y_series.index.month),(y_series.index.day)]).sum().values,index=pd.period_range(start=y_series.index[0],end=y_series.index[-1],freq='D'),columns=['Rain'])
+    
+    #y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
     dti = pd.date_range(start=x_series.index[0], end=x_series.index[-1] + timedelta(hours=23), freq="H")
     #results=pd.DataFrame(index = dti, columns = ['Rain'])
     results=pd.DataFrame(index = dti, columns = y_series.columns)
@@ -249,7 +251,7 @@ class Analysis(object):
         self.figures.append(exceedence_probability(Serie_Observed.mean(axis=1), Serie_Simulated.mean(axis=1), self.SIM.temporal_resolution))
         self.names_figures.append('Exceedence_probability')
         
-    def figure_disaggregation_fig(self,hourly_disaggregation,daily_disaggregation,real_series,yearmin,yearmax):
+    def disaggregation_fig(self,hourly_disaggregation,daily_disaggregation,real_series,yearmin,yearmax):
         self.figures.append(figure_disaggregation(hourly_disaggregation,daily_disaggregation,real_series,yearmin,yearmax))
         self.names_figures.append('Serie_disaggregation')
         

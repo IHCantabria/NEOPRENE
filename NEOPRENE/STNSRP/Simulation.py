@@ -26,7 +26,7 @@ class Simulation(object):
         statististics_sim_df=pd.DataFrame(index=self.hiperparams.statistics_name,columns=self.hiperparams.Seasonality_str)
     
         list_params = inputs_simulation(params_cal).params_cal
-        
+
         Df_params = list_params[0]
         
         Df_params.columns = self.hiperparams.Seasonality
@@ -49,7 +49,6 @@ class Simulation(object):
 		## We start with synthetic simulation and statistical calculations.
 
         if self.hiperparams.process=='normal':
-   
             [Df_sim_join_day_,Df_sim_join_hour_]=\
                 STNSRP_simulation(Df_params, Dataframe_xi_months, XX, YY, self.hiperparams.year_ini, self.hiperparams.year_fin, self.hiperparams.temporal_resolution, self.hiperparams.process,
                                  self.hiperparams.coordinates,self.hiperparams.storm_radius, self.hiperparams.Seasonality, Input_Attr.ID.values)
@@ -97,7 +96,7 @@ class Simulation(object):
         elif self.hiperparams.temporal_resolution == 'h':
             Data=Df_sim_join_hour_.copy()
             
-        Data[Data<0.001]=0
+        Data[Data<0.00001]=0
     
         statististics_sim_df = Statistics(self.hiperparams, time_series = Data, attributes = Input_Attr)
         
