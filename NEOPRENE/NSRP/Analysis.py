@@ -134,7 +134,9 @@ def disaggregation_rainfall(x_series, y_series):
     #y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
     #results=x_series.resample('h').agg(pd.Series.sum, min_count=1)*np.nan
     
-    y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
+    y_series_daily = pd.DataFrame(y_series.groupby([(y_series.index.year),(y_series.index.month),(y_series.index.day)]).sum().values,index=pd.period_range(start=y_series.index[0],end=y_series.index[-1],freq='D'),columns=['Rain'])
+    
+    #y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
     dti = pd.date_range(start=x_series.index[0], end=x_series.index[-1] + timedelta(hours=23), freq="H")
     #results=pd.DataFrame(index = dti, columns = ['Rain'])
     results=pd.DataFrame(index = dti, columns = y_series.columns)

@@ -147,7 +147,7 @@ def disaggregation_rainfall(x_series, y_series):
     #y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
     #results=x_series.resample('h').agg(pd.Series.sum, min_count=1)*np.nan
     
-    y_series_daily = y_series.resample('D').agg(pd.Series.sum, min_count=1)
+    y_series_daily = pd.DataFrame(y_series.groupby([(y_series.index.year),(y_series.index.month),(y_series.index.day)]).sum().values,index=pd.period_range(start=y_series.index[0],end=y_series.index[-1],freq='D'),columns=y_series.columns)
     dti = pd.date_range(start=x_series.index[0], end=x_series.index[-1] + timedelta(hours=23), freq="H")
     #results=pd.DataFrame(index = dti, columns = ['Rain'])
     results=pd.DataFrame(index = dti, columns = y_series.columns)
@@ -194,9 +194,18 @@ def figure_correlation(CAL,SIM):
     
     figures = []
     names    = []
+    
+    delete =  RK*CK-len(SIM.Seasonality)
 
     for cross_sim in SIM.crosscorr_Simulated.keys():
-        fig, axes = plt.subplots(RK, CK, figsize=(10, 10))
+        
+        if len(SIM.Seasonality)==1:
+            fig, axes = plt.subplots(figsize=(5, 5))
+        else:
+            fig, axes = plt.subplots(RK, CK, figsize=(14, 14))
+            axes = axes.ravel()
+            
+            
         for i, season in enumerate(SIM.Seasonality):
             obs_cross = CAL.crosscorr_Real[cross_sim][season]
             cal_cross = CAL.crosscorr_Fit[cross_sim][season]
@@ -205,11 +214,16 @@ def figure_correlation(CAL,SIM):
             tim = cross_sim.split('_')[-1]
             frq = SIM.temporal_resolution
 
-            row = i // CK
-            col = i % CK
+            # row = i // CK
+            # col = i % CK
 
-            ax=axes[row,col]
             
+            
+            if len(SIM.Seasonality)==1:
+                ax=axes
+            else:
+                ax=axes[i]
+
             ax.plot(obs_cross['dist'].values, obs_cross['cross_corr'].values, 'b^-')
             ax.plot(cal_cross['dist'].values, cal_cross['cross_corr'].values, 'ks-')
             ax.plot(CAL.crosscorr_Real_Dist[season].dist, CAL.crosscorr_Real_Dist[season].Corr,'.b')
@@ -223,6 +237,10 @@ def figure_correlation(CAL,SIM):
             ax.set_xlabel('distance (km)',fontsize = 15)
             ax.tick_params(axis = 'both', labelsize = 15)
             ax.grid()
+            
+        if delete!=0:
+            for i in range(1,delete+1):
+                axes[-i].remove()
 
 
         legend_elements = [Line2D([0], [0], label='Observed', color='b',linestyle = '-',marker='^'),
@@ -231,10 +249,33 @@ def figure_correlation(CAL,SIM):
                            Line2D([], [], label='Simulated', color='r',marker='x',linestyle='None'),
                            Line2D([], [], label='Observed', color='b',marker='.',linestyle='None'),
                           ]
-
-        fig.legend(handles=legend_elements, loc = 8, ncol=5,fontsize=15)
-
-        fig.tight_layout(pad=3.7)
+        #plt.tight_layout()
+        if len(SIM.Seasonality)==1:
+            axes.legend(handles=legend_elements, ncol=5,fontsize=15, loc='upper center' ,bbox_to_anchor=(0.5, -0.25))
+        else:
+            if len(SIM.Seasonality)==12:
+                fig.subplots_adjust(
+                        wspace=0.4,
+                        hspace=0.4)
+                plt.legend(handles=legend_elements, ncol=5,fontsize=15, loc='upper center' ,bbox_to_anchor=(-1.8, -0.25))
+            elif len(SIM.Seasonality)==3:
+                plt.legend(handles=legend_elements, ncol=5,fontsize=15, loc='upper center' ,bbox_to_anchor=(1.1, -0.25))
+                fig.subplots_adjust(
+                        wspace=0.3,
+                        hspace=0.3)
+            elif len(SIM.Seasonality)==2 or len(SIM.Seasonality)==4:
+                plt.legend(handles=legend_elements, ncol=5,fontsize=15, loc='upper center' ,bbox_to_anchor=(-0.2, -0.25))
+                fig.subplots_adjust(
+                        wspace=0.3,
+                        hspace=0.3)
+                
+               
+          
+            
+        
+        
+        #plt.tight_layout(pad=3.7)
+        #fig.subplots_adjust(bottom=0.25)
         
         figures.append(fig)
         names.append(cross_sim)
