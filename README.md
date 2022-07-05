@@ -1,6 +1,7 @@
 # NEOPRENE: Neyman-Scott Process Rainfall Emulator
 
-[![DOI](https://zenodo.org/badge/409946207.svg)](https://zenodo.org/badge/latestdoi/409946207)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6349377.svg)](https://doi.org/10.5281/zenodo.6349377)
+
 
 The **NEOPRENE** library implements a rectangular pulses model for rainfall emulation based on the Neyman-Scott process. The emulator may be used to generate multi-site synthetic rainfall time series that reproduce observed statistics at different temporal aggregations. It has been designed with rainfall dissaggregation and extreme rainfall analysis in mind.
 
