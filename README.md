@@ -7,8 +7,6 @@ The **NEOPRENE** library implements a rectangular pulses model for rainfall emul
 
 The description of the Neyman-Scott Process -or Space-time Neyman-Scott Rectangular Pulses Model- can be found in the [doc folder](https://github.com/IHCantabria/NEOPRENE/tree/main/doc).
 
-A paper describing the library has been sent for review to _Environmental Modelling & Software_.
-
 Other papers by the authors where -previous incarnations of- the **NEOPRENE** library has been used and the mathematical model has been described are:
 
 + Diez-Sierra, J.; del Jesus, M. Subdaily Rainfall Estimation through Daily Rainfall Downscaling Using Random Forests in Spain. Water **2019**, _11_, 125. [https://doi.org/10.3390/w11010125](https://doi.org/10.3390/w11010125)
