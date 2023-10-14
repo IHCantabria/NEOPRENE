@@ -7,6 +7,10 @@ The **NEOPRENE** library implements a rectangular pulses model for rainfall emul
 
 The description of the Neyman-Scott Process -or Space-time Neyman-Scott Rectangular Pulses Model- can be found in the [doc folder](https://github.com/IHCantabria/NEOPRENE/tree/main/doc).
 
+A [paper](https://gmd.copernicus.org/articles/16/5035/2023/) describing and testing the library has been published in the scientific journal [_Geoscientific Model Development_](https://www.geoscientific-model-development.net/). The paper can be cited as:
+
++ Diez-Sierra, J., Navas, S., and del Jesus, M.: NEOPRENE v1.0.1: a Python library for generating spatial rainfall based on the Neyman–Scott process, Geosci. Model Dev., 16, 5035–5048, [https://doi.org/10.5194/gmd-16-5035-2023](https://doi.org/10.5194/gmd-16-5035-2023), 2023.
+
 Other papers by the authors where -previous incarnations of- the **NEOPRENE** library has been used and the mathematical model has been described are:
 
 + Diez-Sierra, J.; del Jesus, M. Subdaily Rainfall Estimation through Daily Rainfall Downscaling Using Random Forests in Spain. Water **2019**, _11_, 125. [https://doi.org/10.3390/w11010125](https://doi.org/10.3390/w11010125)
