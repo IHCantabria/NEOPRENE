@@ -1,12 +1,11 @@
 '''
-Library containing the necessary functions to simulate the Neyman-Scott process. 
-Rectangular Pulses (NSRP).
+Library containing classes for computing statistics from time series.
+The statistics are then used to calibrate the model parameters
 
-	Authors: 
+    Authors:
         + Javier Díez Sierra
-	    + Salvador Navas Fernández
+        + Salvador Navas Fernández
         + Manuel del Jesus
-    
 '''
 
 '''Functions of the NSRP mode'''
@@ -25,49 +24,51 @@ from datetime import timedelta
 from scipy import stats
 
 
-def calculate_statistics(Data,statistics,temporal_resolution):
-    """ 
+def calculate_statistics(Data, statistics, temporal_resolution):
+    """
     Calculation of the statistics for a given station
     The statistics that can be calculated are:
     statistics=[mean, var_h, autocorr_l_h, fih_h, fiWW_h, fiDD_h, M3_h]
     (l=lag, h=aggregation levels)
     """
 
-    statistics_values_real=list()
-    if temporal_resolution=='d':
-        t='D'
-    elif temporal_resolution=='h':
-        t='h'
+    statistics_values_real = list()
+    if temporal_resolution == 'd':
+        t = 'D'
+    elif temporal_resolution == 'h':
+        t = 'h'
 
     for statistic in statistics:
 
         if 'mean' in statistic:
             statistics_values_real.append(np.nanmean(Data))
         if 'var' in statistic:
-            h=int(statistic.split("_",1)[1])
-            aux=Data.resample(str(h) + t).sum(); 
+            h = int(statistic.split("_", 1)[1])
+            aux = Data.resample(str(h) + t).sum()
             statistics_values_real.append(np.nanvar(aux))
         if 'autocorr' in statistic:
-            l=int(statistic.split("_",3)[1])
-            h=int(statistic.split("_",3)[2])
-            aux=Data.resample(str(h) + t).sum(); 
-            Autocorrelation_aux=aux[aux.columns[0]].autocorr(lag=l) 
-            if np.size(Autocorrelation_aux)>1: Autocorrelation_aux=Autocorrelation_aux[0] 
+            l = int(statistic.split("_", 3)[1])
+            h = int(statistic.split("_", 3)[2])
+            aux = Data.resample(str(h) + t).sum()
+            Autocorrelation_aux = aux[aux.columns[0]].autocorr(lag=l)
+            if np.size(Autocorrelation_aux) > 1:
+                Autocorrelation_aux = Autocorrelation_aux[0]
             statistics_values_real.append(Autocorrelation_aux)
         if 'fih' in statistic:
-            h=int(statistic.split("_",1)[1])
+            h = int(statistic.split("_", 1)[1])
             statistics_values_real.append(fi_h(Data, h, t))
         if 'fiWW' in statistic:
-            h=int(statistic.split("_",1)[1])
+            h = int(statistic.split("_", 1)[1])
             statistics_values_real.append(fi_WW(Data, h, t))
         if 'fiDD' in statistic:
-            h=int(statistic.split("_",1)[1])
+            h = int(statistic.split("_", 1)[1])
             statistics_values_real.append(fi_DD(Data, h, t))
         if 'M3' in statistic:
-            h=int(statistic.split("_",1)[1])
-            aux=Data.resample(str(h) + t).sum();
-            statistics_values_real.append(sp.stats.moment(aux, moment=3, nan_policy='omit')[0])
-    
+            h = int(statistic.split("_", 1)[1])
+            aux = Data.resample(str(h) + t).sum()
+            statistics_values_real.append(
+                sp.stats.moment(aux, moment=3, nan_policy='omit')[0])
+
     return statistics_values_real
 
 
@@ -336,16 +337,16 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
                 Intensity_cells.append(Intensity)
                 Time_hours_cells.append(Time_hours_cell_sim[j])
 
-        ################################################################################
+        #
         time_ini_cells=np.array(time_ini_cells)
         time_fin_cells=np.array(time_fin_cells)
         Intensity_cells=np.array(Intensity_cells)
         Time_hours_cells=np.array(Time_hours_cells)
-        #################################################################################
-        ############################################################################
-        tt=pd.period_range(start=Df_sim_day_aux[0],end=Df_sim_day_aux[-1], freq='min')
-        tt_ordinal=tt.astype(np.int32)*60*10**9
-        ############################################################################
+        #
+        tt = pd.period_range(start=Df_sim_day_aux[0], end=Df_sim_day_aux[-1],
+                             freq='min')
+        tt_ordinal = tt.astype(np.int64)*60*10**9
+        #
         Anhos=list()
         for i, ii in enumerate(time_fin_cells):
             aux=ii; year_aux=aux.year
@@ -370,7 +371,7 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
         i = np.cumsum(i_ini[orden])
         i[i<0] = 0
         rain=i.copy()
-        t_ordinal = pd.PeriodIndex(t.astype(str),freq='N').astype(np.int32)
+        t_ordinal = pd.PeriodIndex(t.astype(str),freq='N').astype(np.int64)
         if np.size(t_ordinal)==0:
             a=1
         else:

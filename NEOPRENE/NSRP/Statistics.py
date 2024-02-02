@@ -2,92 +2,113 @@
 Library containing classes for computing statistics from time series.
 The statistics are then used to calibrate the model parameters
 
-	Authors: 
+    Authors:
         + Javier Díez Sierra
-	    + Salvador Navas Fernández
+        + Salvador Navas Fernández
         + Manuel del Jesus
-    
 '''
 
 
-from NEOPRENE.NSRP.libs_NSRP import *
+from NEOPRENE.NSRP.libs_NSRP import calculate_statistics
 import numpy as np
 import pandas as pd
 
 
-def statistics_from_file(statistics_name, Seasonality_str, Seasonality, temporal_resolution, file):
-    statististics_dataframe=pd.DataFrame(index=statistics_name,columns=Seasonality_str)
-            
-    statistics_external = pd.read_csv(file,index_col=0)
+def statistics_from_file(statistics_name, Seasonality_str, Seasonality,
+                         temporal_resolution, file):
+    statististics_dataframe = pd.DataFrame(index=statistics_name,
+                                           columns=Seasonality_str)
+    statistics_external = pd.read_csv(file, index_col=0)
     statistics_external.columns = Seasonality
-            
+
     for pri, prii in enumerate(Seasonality):
-        statististics_values_real=statistics_external.iloc[:,pri].values
-        statististics_dataframe.loc[:,str(prii)]=statististics_values_real
+        statististics_values_real = statistics_external.iloc[:, pri].values
+        statististics_dataframe.loc[:, str(prii)] = statististics_values_real
     return statististics_dataframe
-    
-def statistics_from_serie(statistics_name, Seasonality_str, Seasonality, temporal_resolution, time_series):
-    statististics_dataframe=pd.DataFrame(index=statistics_name,columns=Seasonality_str)
-    Datos_ = pd.DataFrame(index=time_series.index,columns = ['Rain'])
-    Datos_.loc[:,'Rain'] = time_series.iloc[:,0].values
-        
+
+
+def statistics_from_serie(statistics_name, Seasonality_str, Seasonality,
+                          temporal_resolution, time_series):
+    statististics_dataframe = pd.DataFrame(index=statistics_name,
+                                           columns=Seasonality_str)
+    Datos_ = pd.DataFrame(index=time_series.index,
+                          data=time_series.iloc[:, 0],
+                          columns=['Rain'],
+                          dtype="float64")
+
     for pri, prii in enumerate(Seasonality):
-        Datos=Datos_.copy(); Datos[Datos['Rain']<0]=np.nan
-             
-        if len(Seasonality)==12:
-            ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
+        Datos = Datos_.copy()
+        Datos[Datos['Rain'] < 0] = np.nan
+
+        if len(Seasonality) == 12:
+            # We select only the dates (months) for which I am going to
+            # calculate the statistics to be adjusted later.
             pos_s = np.where(Datos_.index.month == prii)[0]
             pos_r = np.where(Datos_.values >= 0)[0]
             pos = np.intersect1d(pos_s, pos_r)
-            Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
-            Datos = pd.DataFrame (Datos_['Rain'].iloc[pos].values, index = Datos_time_period)
-            
+            Datos_time_period = pd.period_range('1800', periods=len(pos),
+                                                freq=temporal_resolution)
+            Datos = pd.DataFrame(Datos_['Rain'].iloc[pos].values,
+                                 index=Datos_time_period)
+
         else:
-            ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
+            # We select only the dates (months) for which I am going to
+            # calculate the statistics to be adjusted later.
             pos = []
             for i, ii in enumerate(prii):
                 pos_s = np.where(Datos_.index.month == ii)[0]
                 pos_r = np.where(Datos_.values >= 0)[0]
                 pos.append(np.intersect1d(pos_s, pos_r))
             pos = [item for sublist in pos for item in sublist]
-            Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
-            Datos = pd.DataFrame (Datos_['Rain'].iloc[pos].values, index = Datos_time_period)
-        
-            ## We calculate the defined statistics to be adjusted and I enter them in a dataframe.
-        statististics_values = calculate_statistics(Datos,statistics_name, temporal_resolution)
-        
-        statististics_dataframe.loc[:,str(prii)]=statististics_values
+            Datos_time_period = pd.period_range('1800', periods=len(pos),
+                                                freq=temporal_resolution)
+            Datos = pd.DataFrame(Datos_['Rain'].iloc[pos].values,
+                                 index=Datos_time_period)
+
+        # We calculate the defined statistics to be adjusted and I enter
+        # them in a dataframe.
+        statististics_values = calculate_statistics(Datos, statistics_name,
+                                                    temporal_resolution)
+
+        statististics_dataframe.loc[:, str(prii)] = statististics_values
     return statististics_dataframe
 
 
 class Statistics (object):
-    """ This function allows the computation of the point model's spline statistics for the calibration from different data sources. 
-    The input data can be a file with the statistics or a time series from which the statistics are calculated.
-    
+    """ This function allows the computation of the point model's spline
+    statistics for the calibration from different data sources. The input
+    data can be a file with the statistics or a time series from which
+    the statistics are calculated.
+
     Parameters
     ----------
-    serie : Dataframe or None. 
-        Precipitation time series with a given resolution. In the case where the series is not available and only the statistics are available, it is necessary to define this parameter as None
-        
+    serie : Dataframe or None.
+        Precipitation time series with a given resolution. In the case where
+    the series is not available and only the statistics are available, it is
+    necessary to define this parameter as None
+
     file : string or None
-        File containing the database containing the statistics previously defined in the input file containing the parameters for calibration.
-        
+        File containing the database containing the statistics previously
+    defined in the input file containing the parameters for calibration.
+
     Outputs
     -------
-    Dataframe with calculated statistics. 
+    Dataframe with calculated statistics.
     """
+
     def __init__(self, hiperparams, time_series=None, file=None):
-    
         statistics_name     = hiperparams.statistics_name
         Seasonality_str     = hiperparams.Seasonality_str
         Seasonality         = hiperparams.Seasonality
         temporal_resolution = hiperparams.temporal_resolution
-            
-        if type(time_series)!=type(None) and file != None:
-            raise Exception ('It is not possible to enter two types of data')
-        if type(time_series)!=type(None):
-            self.statististics_dataframe = statistics_from_serie(statistics_name,Seasonality_str,Seasonality,temporal_resolution, time_series)
-        elif file != None:
-            self.statististics_dataframe = statistics_from_file(statistics_name,Seasonality_str,Seasonality,temporal_resolution, file)
+
+        if time_series is not None and file is not None:
+            raise Exception('It is not possible to enter two types of data')
+        if time_series is not None:
+            self.statististics_dataframe = statistics_from_serie(statistics_name,
+            Seasonality_str, Seasonality, temporal_resolution, time_series)
+        elif file is not None:
+            self.statististics_dataframe = statistics_from_file(statistics_name,
+            Seasonality_str, Seasonality, temporal_resolution, file)
         else:
             raise Exception

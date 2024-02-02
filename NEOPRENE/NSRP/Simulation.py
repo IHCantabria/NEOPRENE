@@ -61,9 +61,11 @@ class Simulation(object):
 
 			##Combino los dos processos
             Df_sim_join_hour_=pd.DataFrame(index=Df_sim_join_hour_1.index)
-            Df_sim_join_hour_['Rain']=Df_sim_join_hour_1.values+Df_sim_join_hour_2.values
+            Df_sim_join_hour_['Rain'] = Df_sim_join_hour_1.values.reshape(-1) \
+                + Df_sim_join_hour_2.values.reshape(-1)
             Df_sim_join_day_=pd.DataFrame(index=Df_sim_join_day_2.index)
-            Df_sim_join_day_['Rain']=Df_sim_join_day_1.values+Df_sim_join_day_2.values
+            Df_sim_join_day_['Rain']=Df_sim_join_day_1.values.reshape(-1) \
+                +Df_sim_join_day_2.values.reshape(-1)
 
             print('Total cumulative rainfall - Analytical estimation - Storm 1 = ' + "{:15.2f}".format(np.sum(Intensidad_cellss1*Duracion_horas_cellss1))) 
             print('Total cumulative rainfall - Analytical estimation - Storm 2 = ' + "{:15.2f}".format(np.sum(Intensidad_cellss2*Duracion_horas_cellss2)))  
