@@ -184,7 +184,7 @@ def figure_disaggregation(hourly_disaggregation,daily_disaggregation,real_series
     
     hourly_disaggregation_tab = pd.DataFrame(index=hourly_disaggregation_c.index,columns=['mm','day','Hour','Par_Impar'])
 
-    hourly_disaggregation_tab.iloc[:,0] = hourly_disaggregation_c.values
+    hourly_disaggregation_tab.iloc[:,0] = hourly_disaggregation_c.values.flatten()
     hourly_disaggregation_tab.iloc[:,1] = hourly_disaggregation_c.index.day
     hourly_disaggregation_tab.iloc[:,2] = hourly_disaggregation_c.index.hour
     hourly_disaggregation_tab.iloc[:,3] = (hourly_disaggregation_tab.day.values % 2)

@@ -66,6 +66,7 @@ def calculate_statistics(Data,statistics,temporal_resolution):
         if 'M3' in statistic:
             h=int(statistic.split("_",1)[1])
             aux=Data.resample(str(h) + t).sum();
+            aux = np.array(aux, dtype=np.float64)
             statistics_values_real.append(sp.stats.moment(aux, moment=3, nan_policy='omit')[0])
     
     return statistics_values_real
@@ -344,7 +345,7 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
         #################################################################################
         ############################################################################
         tt=pd.period_range(start=Df_sim_day_aux[0],end=Df_sim_day_aux[-1], freq='min')
-        tt_ordinal=tt.astype(np.int32)*60*10**9
+        tt_ordinal=tt.astype('int64')*60*10**9
         ############################################################################
         Anhos=list()
         for i, ii in enumerate(time_fin_cells):
@@ -370,7 +371,7 @@ def NSRP_simulation(Params_month, year_ini, year_fin, temporal_resolution,proces
         i = np.cumsum(i_ini[orden])
         i[i<0] = 0
         rain=i.copy()
-        t_ordinal = pd.PeriodIndex(t.astype(str),freq='N').astype(np.int32)
+        t_ordinal = pd.PeriodIndex(t.astype(str),freq='N').astype('int64')
         if np.size(t_ordinal)==0:
             a=1
         else:
