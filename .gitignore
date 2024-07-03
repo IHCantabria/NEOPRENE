@@ -1,4 +1,5 @@
 *.pyc
+*.bak
 NSRP/NSRP.egg-info*
 *ipynb_checkpoints*
 *DS_Store*
@@ -9,3 +10,4 @@ notebooks/CAL*
 notebooks/SIM*
 notebooks/Figures.ipynb
 notebooks/POINT_SPATIAL_DAILY/SIM1/*
+notebooks/auxiliary-materials/SPD/dem_*

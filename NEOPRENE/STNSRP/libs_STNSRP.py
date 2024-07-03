@@ -28,7 +28,9 @@ from scipy import stats
 from scipy.optimize import curve_fit
 import math as mt
 from math import *
+from math import sqrt, isnan
 import tqdm
+import ast
 
 def scale_funtion(x, landa, ipsilon, eta, alpha):
     return (((landa*mt.gamma(2)*ipsilon))/(x*eta))
@@ -86,35 +88,33 @@ def calculate_statistics(Data,statistics,temporal_resolution):
     
 
 def cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordinates, cross_corr_h, temporal_resolution):
-    
-    cross_corr_stationality={}
-    
-    cross_corr_dist_stationality={}
-    
+    cross_corr_stationality = {}
+    cross_corr_dist_stationality = {}
 
     for i in Seasonality:
-        Data=time_series.copy()
-        cross_corr=pd.DataFrame()
+        Data = time_series.copy()
+        cross_corr = pd.DataFrame()
 
-        m_T=list()
+        m_T = list()
         for n in np.arange(1, 13): 
-            if not(np.sum(i==n)>=1): m_T.append(n)
-        if len(m_T)==0: Data_month=Data
-        elif len(m_T)==1: 
-            Data_month=Data
-            Data_month[Data_month.index.month==m_T]=np.nan
-        else:
-            Data_month=Data; 
-            for m_t in m_T:
-                Data_month[Data_month.index.month==m_t]=np.nan
-                
-        h=int(cross_corr_h.split("_")[1])
-        aux_month=Data.resample(str(h) + temporal_resolution).agg(pd.Series.sum, min_count=1); 
-
-        cross_corr['dist'], cross_corr['cross_corr'] = cross_correlation(Attributes, aux_month, func, 11, coordinates)
+            if not (np.sum(i == n) >= 1): 
+                m_T.append(n)
         
+        if len(m_T) == 0: 
+            Data_month = Data
+        elif len(m_T) == 1: 
+            Data_month = Data
+            Data_month[Data_month.index.month == m_T] = np.nan
+        else:
+            Data_month = Data
+            for m_t in m_T:
+                Data_month[Data_month.index.month == m_t] = np.nan     
+        h = int(cross_corr_h.split("_")[1])
+        aux_month = Data_month.resample(str(h) + temporal_resolution).agg(pd.Series.sum, min_count=1)
+        cross_corr['dist'], cross_corr['cross_corr'] = cross_correlation(Attributes, aux_month, func, 11, coordinates)        
         cross_corr_stationality[i] = cross_corr
         cross_corr_dist_stationality[i] = cross_correlation_dist(Attributes, aux_month, func, coordinates)
+       
 
     return cross_corr_stationality, cross_corr_dist_stationality
 
@@ -159,98 +159,106 @@ def cross_corr_stationality_f_old(time_series, Seasonality, Attributes, func, co
     return cross_corr_stationality, cross_corr_dist_stationality
 
 def cross_correlation_dist(Stations, Series, funcion, coordinates):
-    Spatial_correlation=pd.DataFrame(index=Series.columns, columns=Series.columns)
-    Distance=pd.DataFrame(index=Series.columns, columns=Series.columns)
-
-    for i, ii in enumerate(Spatial_correlation.index):
-        x1=Stations[Stations['ID']==ii].X.values; x1=x1[0]
-        y1=Stations[Stations['ID']==ii].Y.values; y1=y1[0]
-        data1=Series[ii].values
-        for j, jj, in enumerate(Spatial_correlation.columns):
-            x2=Stations[Stations['ID']==jj].X.values; x2=x2[0]
-            y2=Stations[Stations['ID']==jj].Y.values; y2=y2[0]
-            if (coordinates.lower()=='geographical'):
-                Distance[ii][jj]=haversine((y1, x1), (y2, x2), unit=Unit.KILOMETERS)
-            elif coordinates.lower()=='utm':
-                Distance[ii][jj]=distance_f(x1, y1, x2, y2)/1000
-            else:
-                raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
-
-                
-            pos_no_nans=np.intersect1d(np.where(~np.isnan(Series[ii].values)), np.where(~np.isnan(Series[jj].values)))
-            corr_s=stats.pearsonr(Series[ii].values[pos_no_nans], Series[jj].values[pos_no_nans])
-            Spatial_correlation[ii][jj]=corr_s[0]
-
-    Distance_correlation=pd.DataFrame()
-    Distance_correlation['Corr']=np.reshape(Spatial_correlation.values, np.size(Spatial_correlation.values))
-    Distance_correlation['dist']=np.reshape(Distance.values, np.size(Distance.values))
+    Spatial_correlation = pd.DataFrame(index=Series.columns, columns=Series.columns)
+    Distance = pd.DataFrame(index=Series.columns, columns=Series.columns)
     
-    Distance_correlation=pd.DataFrame(np.vstack({tuple(row) for row in Distance_correlation.values}), columns=['Corr', 'dist'])
+    for i, ii in enumerate(Spatial_correlation.index):
+        x1 = Stations.loc[Stations['ID'] == ii, 'X'].values[0]
+        y1 = Stations.loc[Stations['ID'] == ii, 'Y'].values[0]
+        data1 = Series[ii].values
+        
+        for j, jj in enumerate(Spatial_correlation.columns):
+            x2 = Stations.loc[Stations['ID'] == jj, 'X'].values[0]
+            y2 = Stations.loc[Stations['ID'] == jj, 'Y'].values[0]
+            
+            if coordinates.lower() == 'geographical':
+                Distance.at[ii, jj] = haversine((y1, x1), (y2, x2), unit=Unit.KILOMETERS)
+            elif coordinates.lower() == 'utm':
+                Distance.at[ii, jj] = distance_f(x1, y1, x2, y2) / 1000
+            else:
+                raise Exception('Coordinates is wrongly defined, it should be geographical or utm')
+                
+            pos_no_nans = np.intersect1d(np.where(~np.isnan(data1)), np.where(~np.isnan(Series[jj].values)))
+            if len(pos_no_nans) > 0:
+                corr_s = stats.pearsonr(data1[pos_no_nans], Series[jj].values[pos_no_nans])
+                Spatial_correlation.at[ii, jj] = corr_s[0]
+            else:
+                Spatial_correlation.at[ii, jj] = np.nan
 
-    Distance_correlation = Distance_correlation[np.isfinite(Distance_correlation['Corr'])]
+    Distance_correlation = pd.DataFrame({
+        'Corr': np.reshape(Spatial_correlation.values, np.size(Spatial_correlation.values)),
+        'dist': np.reshape(Distance.values, np.size(Distance.values))
+    })
+
+    Distance_correlation = Distance_correlation.dropna(subset=['Corr'])
     
     return Distance_correlation
 
 
 def cross_correlation(Stations, Series, funcion, divisions, coordinates):
-    Spatial_correlation=pd.DataFrame(index=Series.columns, columns=Series.columns)
-    Distance=pd.DataFrame(index=Series.columns, columns=Series.columns)
+    Spatial_correlation = pd.DataFrame(index=Series.columns, columns=Series.columns)
+    Distance = pd.DataFrame(index=Series.columns, columns=Series.columns)
+    
     for i, ii in enumerate(Spatial_correlation.index):
-        x1=Stations[Stations['ID']==ii].X.values; x1=x1[0]
-        y1=Stations[Stations['ID']==ii].Y.values; y1=y1[0]
-        data1=Series[ii].values
-        for j, jj, in enumerate(Spatial_correlation.columns):
-            x2=Stations[Stations['ID']==jj].X.values; x2=x2[0]
-            y2=Stations[Stations['ID']==jj].Y.values; y2=y2[0]
-            if (coordinates.lower()=='geographical'):
-                Distance[ii][jj]=haversine((y1, x1), (y2, x2), unit=Unit.KILOMETERS)
-            elif coordinates.lower()=='utm':
-                Distance[ii][jj]=distance_f(x1, y1, x2, y2)/1000
+        x1 = Stations.loc[Stations['ID'] == ii, 'X'].values[0]
+        y1 = Stations.loc[Stations['ID'] == ii, 'Y'].values[0]
+        data1 = Series[ii].values
+        
+        for j, jj in enumerate(Spatial_correlation.columns):
+            x2 = Stations.loc[Stations['ID'] == jj, 'X'].values[0]
+            y2 = Stations.loc[Stations['ID'] == jj, 'Y'].values[0]
+            
+            if coordinates.lower() == 'geographical':
+                Distance.at[ii, jj] = haversine((y1, x1), (y2, x2), unit=Unit.KILOMETERS)
+            elif coordinates.lower() == 'utm':
+                Distance.at[ii, jj] = distance_f(x1, y1, x2, y2) / 1000
             else:
-                raise Exception ('coordinates is wrongly defined, it should be geographical or utm')
-
+                raise Exception('Coordinates is wrongly defined, it should be geographical or utm')
                 
-            pos_no_nans=np.intersect1d(np.where(~np.isnan(Series[ii].values)), np.where(~np.isnan(Series[jj].values)))
-            corr_s=stats.pearsonr(Series[ii].values[pos_no_nans], Series[jj].values[pos_no_nans])
-            Spatial_correlation[ii][jj]=corr_s[0]
+            pos_no_nans = np.intersect1d(np.where(~np.isnan(data1)), np.where(~np.isnan(Series[jj].values)))
+            if len(pos_no_nans) > 0:
+                corr_s = stats.pearsonr(data1[pos_no_nans], Series[jj].values[pos_no_nans])
+                Spatial_correlation.at[ii, jj] = corr_s[0]
+            else:
+                Spatial_correlation.at[ii, jj] = np.nan
 
-    Distance_correlation=pd.DataFrame()
-    Distance_correlation['Corr']=np.reshape(Spatial_correlation.values, np.size(Spatial_correlation.values))
-    Distance_correlation['dist']=np.reshape(Distance.values, np.size(Distance.values))
+    Distance_correlation = pd.DataFrame({
+        'Corr': np.reshape(Spatial_correlation.values, np.size(Spatial_correlation.values)),
+        'dist': np.reshape(Distance.values, np.size(Distance.values))
+    })
+
+    Distance_correlation = Distance_correlation.dropna(subset=['Corr'])
     
-    Distance_correlation=pd.DataFrame(np.vstack({tuple(row) for row in Distance_correlation.values}), columns=['Corr', 'dist'])
-
-    Distance_correlation = Distance_correlation[np.isfinite(Distance_correlation['Corr'])]
-
-    sections=np.linspace(0, Distance_correlation['dist'].max(), divisions)
-    average_points=(sections[1:] + sections[:-1]) / 2
-    Mean_correlation=list()
+    sections = np.linspace(0, Distance_correlation['dist'].max(), divisions)
+    average_points = (sections[1:] + sections[:-1]) / 2
+    Mean_correlation = []
+    
     for i in range(len(average_points)):
-        pos1=np.where(Distance_correlation['dist']>=sections[i]) 
-        pos2=np.where(Distance_correlation['dist']<sections[i+1])
-        pos=np.intersect1d(pos1, pos2)
-        Mean_correlation.append(np.mean(Distance_correlation['Corr'][pos]))    
-    
+        pos = np.where((Distance_correlation['dist'] >= sections[i]) & (Distance_correlation['dist'] < sections[i+1]))[0]
+        if len(pos) > 0:
+            Mean_correlation.append(np.mean(Distance_correlation['Corr'].iloc[pos]))
+        else:
+            Mean_correlation.append(np.nan)
     
     xdata = Distance_correlation['dist'].values
     ydata = Distance_correlation['Corr'].values
-    
-    cross_correlation.Distance_correlation = Distance_correlation
+
     try:
         def func(x, a, b, c):
-            """Function to which the spatial correlation values are fitted"""
             return a * np.exp(-b * x) + c
-        popt, pcov = curve_fit(func, xdata, ydata, maxfev=10000)#Sometimes the function does not fit to de data. Improve.
-        Mean_correlation=func(average_points, popt[0], popt[1], popt[2])
+        popt, pcov = curve_fit(func, xdata, ydata, maxfev=10000)
+        Mean_correlation = func(average_points, *popt)
     except Exception as e:
-        print('No exponential cross-correlation')
-        def func(x, a, b):
-            """Function to which the spatial correlation values are fitted"""
-            return (a * x) + b
-        popt, pcov = curve_fit(func, xdata, ydata, maxfev=10000)#Sometimes the function does not fit to de data. Improve.
-        Mean_correlation=func(average_points, popt[0], popt[1])
+        print('No exponential cross-correlation:', e)
+        try:
+            def func(x, a, b):
+                return a * x + b
+            popt, pcov = curve_fit(func, xdata, ydata, maxfev=10000)
+            Mean_correlation = func(average_points, *popt)
+        except Exception as e:
+            print('No linear fit possible:', e)
+            Mean_correlation = np.full_like(average_points, np.nan)
 
-    
     return average_points, Mean_correlation
 
 
@@ -260,7 +268,7 @@ def XI_MONTHS(Data, Df_parameters, process):
     for gauge in Data.columns:
         xis=list()
         for season in Df_parameters.columns:
-            posi=np.where(np.in1d(Data.index.month, season, assume_unique=True))[0]
+            posi=np.where(np.in1d(Data.index.month, ast.literal_eval(season), assume_unique=True))[0]
             mean_rain=np.nanmean(Data[gauge][posi])
             if process=='normal':
                 if index_string(Df_parameters, 'alpha')!=None: alpha=Df_parameters[season]['alpha']
@@ -299,314 +307,131 @@ class evaluateInd_PSO(object):
         self.storm_radius = storm_radius
         self.cross_corr = cross_corr
 
-    def __call__(self, ind):
-    
-        landa=list(); mu_c=list(); eta=list(); xi=list(); betha=list(); alpha=list(); alpha_p=list();
-        fi_may=list(); fi_may_s=list();
-        if self.p=='normal' and self.storm_radius==False:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]) 
-
-        elif self.p=='normal' and self.storm_radius==True:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]); fi_may_s.append(ind[5])
-
-        elif self.p=='storms' and self.storm_radius==False:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4])
-            landa.append(ind[5]); mu_c.append(ind[6]); eta.append(ind[7]); xi.append(1); betha.append(ind[8]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[9])
-
-        elif self.p=='storms' and self.storm_radius==True:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]); fi_may_s.append(ind[5])
-            landa.append(ind[6]); mu_c.append(ind[7]); eta.append(ind[8]); xi.append(1); betha.append(ind[9]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
-            
-
-        d_e={}
-        for ii, statistic in enumerate(self.s):    
-
-            ##Variance
-            if 'var' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
-                    /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a    
-            ##Autocorrelation
-            if 'autocorr' in statistic:
-                l=int(self.s[ii].split("_",3)[1])
-                h=int(self.s[ii].split("_",3)[2])
-                a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
-                    /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-            ##fi_h
-            if 'fih' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-            ##fi_WW
-            if 'fiWW' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-            ##fi_DD
-            if 'fiDD' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-            ##M3
-            if 'M3' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
-                /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-        ##Spatial correlation
-        if self.storm_radius==False:
-            if np.sum(['cross' in i for i in self.s])>=1:
-                pos=np.where(['cross' in i for i in self.s]); pos=pos[0]
-                for i, ii in enumerate(pos):
-                    cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
-                    dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_spatial_correlation=list()
-                    for jj in range(len(cross_corr_aux)):
-                        w1=self.w[ii]/11 ; l=0
-                        h=int(self.s[ii].split("_")[1])
-                        d=dist_aux[jj] 
-                        a=NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d)\
-                        /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                        e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
-                        e_spatial_correlation.append(e_aux)
-                        d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
-
-        if self.storm_radius==True:
-            if np.sum(['cross' in i for i in self.s])>=1:
-                pos=np.where(['cross' in i for i in self.s]); pos=pos[0]
-                for i, ii in enumerate(pos):
-                    cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
-                    dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_spatial_correlation=list()
-                    for jj in range(len(cross_corr_aux)):
-                        w1=self.w[ii]/11; l=0
-                        h=int(self.s[ii].split("_")[1])
-                        d=dist_aux[jj] 
-                        a=NSRP_cross_correlation_with_storm_radius(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, \
-                                                                       fi_may, d, fi_may_s)\
-                        /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                        e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
-                        e_spatial_correlation.append(e_aux)
-                        d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
+    def extract_parameters(self, ind):
+        landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, fi_may_s = [], [], [], [], [], [], [], [], []
         
-        for k in d_e.keys():
-            if isnan(d_e[k]): d_e[k] = 10000
+        if self.p == 'normal':
+            landa.extend([ind[0]]); mu_c.extend([ind[1]]); eta.extend([ind[2]]); xi.extend([1]); betha.extend([ind[3]])
+            alpha.extend([1]); alpha_p.extend([1]); fi_may.extend([ind[4]])
+            if self.storm_radius:
+                fi_may_s.extend([ind[5]])
+        elif self.p == 'storms':
+            for i in range(2):
+                offset = i * 6
+                landa.extend([ind[offset]]); mu_c.extend([ind[offset+1]]); eta.extend([ind[offset+2]]); xi.extend([1])
+                betha.extend([ind[offset+3]]); alpha.extend([1]); alpha_p.extend([1]); fi_may.extend([ind[offset+4]])
+                if self.storm_radius:
+                    fi_may_s.extend([ind[offset+5]])
+        
+        return landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, fi_may_s
 
-        errors=list(); errors.append([d_e[i] for i in d_e.keys()])
-        return np.sum(errors)
+    def calculate_error(self, h, a, ii):
+        return self.w[ii] * ((1 - (self.v[ii] / a)) ** 2 + (1 - (a / self.v[ii])) ** 2)
+    
+    def __call__(self, ind):
+        landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, fi_may_s = self.extract_parameters(ind)
+        d_e = {}
+
+        for ii, statistic in enumerate(self.s):
+            if 'var' in statistic:
+                h = int(statistic.split("_", 2)[1])
+                a = sqrt(NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p)) / NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
+                d_e['e' + str(ii)] = self.calculate_error(h, a, ii)
+            elif 'autocorr' in statistic:
+                l, h = map(int, statistic.split("_", 3)[1:])
+                a = NSRP_covariance(h, l, landa, mu_c, eta, xi, betha, alpha, alpha_p) / NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
+                d_e['e' + str(ii)] = self.calculate_error(h, a, ii)
+            elif 'fih' in statistic:
+                h = int(statistic.split("_", 2)[1])
+                a = NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
+                d_e['e' + str(ii)] = self.calculate_error(h, a, ii)
+            elif 'fiWW' in statistic:
+                h = int(statistic.split("_", 2)[1])
+                a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
+                d_e['e' + str(ii)] = self.calculate_error(h, a, ii)
+            elif 'fiDD' in statistic:
+                h = int(statistic.split("_", 2)[1])
+                a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
+                d_e['e' + str(ii)] = self.calculate_error(h, a, ii)
+            elif 'M3' in statistic:
+                h = int(statistic.split("_", 2)[1])
+                a = NSRP_moments_order_3('Poisson', h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p) / NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p) ** (3/2)
+                d_e['e' + str(ii)] = self.calculate_error(h, a, ii)
+        
+        self.handle_spatial_correlation(d_e, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, fi_may_s)
+
+        for k in d_e.keys():
+            if isnan(d_e[k]):
+                d_e[k] = 10000
+
+        return np.sum(list(d_e.values()))
+
+    def handle_spatial_correlation(self, d_e, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, fi_may_s):
+        if np.sum(['cross' in i for i in self.s]) >= 1:
+            pos = np.where(['cross' in i for i in self.s])[0]
+            for i, ii in enumerate(pos):
+                cross_corr_aux = self.cross_corr[self.s[pos[i]]]['cross_corr']
+                dist_aux = self.cross_corr[self.s[pos[i]]]['dist']
+                for jj in range(len(cross_corr_aux)):
+                    h = int(self.s[ii].split("_")[1])
+                    d = dist_aux[jj]
+                    if self.storm_radius:
+                        a = NSRP_cross_correlation_with_storm_radius(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d, fi_may_s) / NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
+                    else:
+                        a = NSRP_cross_correlation(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d) / NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
+                    d_e['cross_corr_' + str(h) + '_' + str(jj)] = self.w[ii] / 11 * ((1 - (a / cross_corr_aux[jj])) ** 2 + (1 - (cross_corr_aux[jj] / a)) ** 2)
 
     def totalError(self, ind):
-
-        landa=list(); mu_c=list(); eta=list(); xi=list(); betha=list(); alpha=list(); alpha_p=list();
-        fi_may=list(); fi_may_s=list();
-        if self.p=='normal' and self.storm_radius==False:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]) 
-
-        elif self.p=='normal' and self.storm_radius==True:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]); fi_may_s.append(ind[5])
-
-        elif self.p=='storms' and self.storm_radius==False:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4])
-            landa.append(ind[5]); mu_c.append(ind[6]); eta.append(ind[7]); xi.append(1); betha.append(ind[8]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[9])
-
-        elif self.p=='storms' and self.storm_radius==True:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]); fi_may_s.append(ind[5])
-            landa.append(ind[6]); mu_c.append(ind[7]); eta.append(ind[8]); xi.append(1); betha.append(ind[9]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
-        
-        d_e={}
-        for ii, statistic in enumerate(self.s):    
-
-            ##Variance
-            if 'var' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
-                    /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a    
-            ##Autocorrelation
-            if 'autocorr' in statistic:
-                l=int(self.s[ii].split("_",3)[1])
-                h=int(self.s[ii].split("_",3)[2])
-                a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
-                    /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-            ##fi_h
-            if 'fih' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-            ##fi_WW
-            if 'fiWW' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-            ##fi_DD
-            if 'fiDD' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-            ##M3
-            if 'M3' in statistic:
-                h=int(self.s[ii].split("_",2)[1])
-                a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
-                /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
-                a = self.w[ii]*((1-(self.v[ii]/a))**2 + (1-(a/self.v[ii]))**2); d_e['e' + str(ii)]=a
-
-        ##Spatial correlation
-        if self.storm_radius==False:
-            if np.sum(['cross' in i for i in self.s])>=1:
-                pos=np.where(['cross' in i for i in self.s]); pos=pos[0]
-                for i, ii in enumerate(pos):
-                    cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
-                    dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_spatial_correlation=list()
-                    for jj in range(len(cross_corr_aux)):
-                        w1=self.w[ii]/11 ; l=0
-                        h=int(self.s[ii].split("_")[1])
-                        d=dist_aux[jj] 
-                        a=NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d)\
-                        /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                        e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
-                        e_spatial_correlation.append(e_aux)
-                        d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
-
-        if self.storm_radius==True:
-            if np.sum(['cross' in i for i in self.s])>=1:
-                pos=np.where(['cross' in i for i in self.s]); pos=pos[0]
-                for i, ii in enumerate(pos):
-                    cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
-                    dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_spatial_correlation=list()
-                    for jj in range(len(cross_corr_aux)):
-                        w1=self.w[ii]/11; l=0
-                        h=int(self.s[ii].split("_")[1])
-                        d=dist_aux[jj] 
-                        a=NSRP_cross_correlation_with_storm_radius(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, \
-                                                                       fi_may, d, fi_may_s)\
-                        /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                        e_aux =w1*((1-(a/cross_corr_aux[jj]))**2 + (1-(cross_corr_aux[jj]/a))**2)
-                        e_spatial_correlation.append(e_aux)
-                        d_e['cross_corr_' + str(h) + '_' +  str(jj)]=e_aux
-        
-        for k in d_e.keys():
-            if isnan(d_e[k]): d_e[k] = 10000
-
-        errors=list(); errors.append([d_e[i] for i in d_e.keys()])
-        return np.sum(errors)
+        return self.__call__(ind)
         
     def compute(self, ind):
-        landa=list(); mu_c=list(); eta=list(); xi=list(); betha=list(); alpha=list(); alpha_p=list();
-        fi_may=list(); fi_may_s=list();
-        if self.p=='normal' and self.storm_radius==False:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]) 
+        landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, fi_may_s = self.extract_parameters(ind)
+        v = {}
 
-        elif self.p=='normal' and self.storm_radius==True:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]); fi_may_s.append(ind[5])
-
-        elif self.p=='storms' and self.storm_radius==False:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4])
-            landa.append(ind[5]); mu_c.append(ind[6]); eta.append(ind[7]); xi.append(1); betha.append(ind[8]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[9])
-
-        elif self.p=='storms' and self.storm_radius==True:
-            landa.append(ind[0]); mu_c.append(ind[1]); eta.append(ind[2]); xi.append(1); betha.append(ind[3]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[4]); fi_may_s.append(ind[5])
-            landa.append(ind[6]); mu_c.append(ind[7]); eta.append(ind[8]); xi.append(1); betha.append(ind[9]);
-            alpha.append(1); alpha_p.append(1); fi_may.append(ind[10]); fi_may_s.append(ind[11])
-        
-        v={}
         for ii, statistic in enumerate(self.s):
-            ##Variance
             if 'var' in statistic:
-                h=int(self.s[ii].split("_",1)[1])
-                a = sqrt(NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p))\
-                    /NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
-                v['v' + str(ii)]=a
-            ##Autocorrelation
-            if 'autocorr' in statistic:
-                l=int(self.s[ii].split("_",3)[1])
-                h=int(self.s[ii].split("_",3)[2])
-                a=NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
-                    /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                v['v' + str(ii)]=a
-            ##fi_h
-            if 'fih' in statistic:
-                h=int(self.s[ii].split("_",1)[1])
-                a=NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
-                v['v' + str(ii)]=a
-            ##fi_WW
-            if 'fiWW' in statistic:
-                h=int(self.s[ii].split("_",1)[1])
+                h = int(statistic.split("_", 1)[1])
+                a = sqrt(NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p)) / NSRP_mean_ST(h, landa, mu_c, eta, xi, alpha, alpha_p)
+                v['v' + str(ii)] = a
+            elif 'autocorr' in statistic:
+                l, h = map(int, statistic.split("_", 3)[1:])
+                a = NSRP_covariance(h, l, landa, mu_c, eta, xi, betha, alpha, alpha_p) / NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
+                v['v' + str(ii)] = a
+            elif 'fih' in statistic:
+                h = int(statistic.split("_", 1)[1])
+                a = NSRP_pdry(h, landa, mu_c, eta, betha, alpha_p)
+                v['v' + str(ii)] = a
+            elif 'fiWW' in statistic:
+                h = int(statistic.split("_", 1)[1])
                 a = NSRP_fi_WW(h, landa, mu_c, eta, betha, alpha_p)
-                v['v' + str(ii)]=a
-            ##fi_DD
-            if 'fiDD' in statistic:
-                h=int(self.s[ii].split("_",1)[1])
+                v['v' + str(ii)] = a
+            elif 'fiDD' in statistic:
+                h = int(statistic.split("_", 1)[1])
                 a = NSRP_fi_DD(h, landa, mu_c, eta, betha, alpha_p)
-                v['v' + str(ii)]=a
-            ##M3
-            if 'M3' in statistic:
-                h=int(self.s[ii].split("_",1)[1])
-                a=NSRP_moments_order_3('Poisson',h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)\
-                /NSRP_covariance(h,0, landa, mu_c, eta, xi, betha, alpha, alpha_p)**(3/2)
-                v['v' + str(ii)]=a
-        ##Spatial correlation
-        if self.storm_radius==False:
-            if np.sum(['cross' in i for i in self.s])>=1:
-                pos=np.where(['cross' in i for i in self.s]); pos=pos[0]
-                for i, ii in enumerate(pos):
-                    cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
-                    dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_spatial_correlation=list()
-                    for jj in range(len(cross_corr_aux)):
-                        w1=self.w[ii]/11; l=0
-                        #h=int(self.s[ii].split("_",3)[2])
-                        h=int(self.s[ii].split("_")[1])
-                        d=dist_aux[jj] 
-                        a=NSRP_cross_correlation(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d)\
-                        /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                        v['cross_corr_' + str(h) + '_' +  str(jj)]=a
-        if self.storm_radius==True:
-            if np.sum(['cross' in i for i in self.s])>=1:
-                pos=np.where(['cross' in i for i in self.s]); pos=pos[0]
-                for i, ii in enumerate(pos):
-                    cross_corr_aux=self.cross_corr[(self.s[pos[i]])]['cross_corr']
-                    dist_aux=self.cross_corr[(self.s[pos[i]])]['dist']
-                    e_spatial_correlation=list()
-                    for jj in range(len(cross_corr_aux)):
-                        w1=self.w[ii]/11; l=0
-                        #h=int(self.s[ii].split("_",3)[2])
-                        h=int(self.s[ii].split("_")[1])
-                        d=dist_aux[jj] 
-                        a=NSRP_cross_correlation_with_storm_radius(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p, \
-                                                                       fi_may, d, fi_may_s)\
-                        /NSRP_covariance(h,l, landa, mu_c, eta, xi, betha, alpha, alpha_p)
-                        v['cross_corr_' + str(h) + '_'+ str(jj)]=a
-                            
-        values=list(); values.append([v[i] for i in v.keys()])
+                v['v' + str(ii)] = a
+            elif 'M3' in statistic:
+                h = int(statistic.split("_", 1)[1])
+                a = NSRP_moments_order_3('Poisson', h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p) / NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p) ** (3/2)
+                v['v' + str(ii)] = a
 
-        return values
+        self.compute_spatial_correlation(v, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, fi_may_s)
+
+        return list(v.values())
+
+    def compute_spatial_correlation(self, v, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, fi_may_s):
+        if np.sum(['cross' in i for i in self.s]) >= 1:
+            pos = np.where(['cross' in i for i in self.s])[0]
+            for i, ii in enumerate(pos):
+                cross_corr_aux = self.cross_corr[self.s[pos[i]]]['cross_corr']
+                dist_aux = self.cross_corr[self.s[pos[i]]]['dist']
+                for jj in range(len(cross_corr_aux)):
+                    h = int(self.s[ii].split("_")[1])
+                    d = dist_aux[jj]
+                    if self.storm_radius:
+                        a = NSRP_cross_correlation_with_storm_radius(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d, fi_may_s) / NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
+                    else:
+                        a = NSRP_cross_correlation(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p, fi_may, d) / NSRP_covariance(h, 0, landa, mu_c, eta, xi, betha, alpha, alpha_p)
+                    v['cross_corr_' + str(h) + '_' + str(jj)] = a
     
 from shapely.geometry import Point
 from shapely.geometry import Polygon
@@ -870,7 +695,7 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
         ############################################################################        
         tt = pd.period_range(start=Df_sim_day_aux[0],end=Df_sim_day_aux[-1], freq='min')
 
-        tt_ordinal=tt.astype(np.int32)*60*10**9
+        tt_ordinal=tt.astype('int64')*60*10**9
 
         ############################################################################
         Anhos=list()
@@ -979,13 +804,13 @@ def STNSRP_simulation(Params_month,Df_xi , XX, YY, year_ini, year_fin, temporal_
 
             rain=i.copy()
 
-            t_ordinal= pd.PeriodIndex(t.astype(str),freq='N').astype(np.int32)
-
+            t_ordinal= pd.PeriodIndex(t.astype(str),freq='N').astype('int64')
+            
+            # Manejar duplicados en t_ordinal
             rainfall = interp1d(t_ordinal, rain, kind="zero", bounds_error=False, fill_value=0.)
             
-
             rrain = rainfall(tt_ordinal)
-
+            
             Date=pd.DataFrame(index=tt)
 
             if temporal_resolution=='d':

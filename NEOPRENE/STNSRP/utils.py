@@ -19,21 +19,28 @@ from datetime import timedelta
 import math
 
 def allmonths(dataframe):
-    """Paso el dataframe a 12 columnas con 12 meses"""
-    if len(dataframe.columns)==12: 
-        dataframe_meses=dataframe
+    """Transforma el dataframe a 12 filas con 12 meses."""
+    expanded_rows = []
 
-    else: 
-        dataframe_meses=pd.DataFrame(index=dataframe.index)
-        for i in dataframe.columns:
-            if np.size(i)==1: dataframe_meses[i]=dataframe[i]
-            else: 
-                for ii in i: dataframe_meses[ii]=dataframe[i]
+    # Expandir las tuplas en filas individuales
+    for idx, row in dataframe.iterrows():
+        # Convierte el índice de cadena a una tupla
+        try:
+            values = eval(idx)
+        except:
+            values = idx
 
-    dataframe=pd.DataFrame(index=dataframe_meses.index)
-    for i in range(1, 13):
-        dataframe[i]=dataframe_meses[i]
-    return dataframe
+        for val in values:
+            # Agrega una nueva fila para cada valor en la tupla
+            expanded_rows.append([val] + row.tolist())
+
+    # Crear el nuevo DataFrame con las filas expandidas
+    expanded_df = pd.DataFrame(expanded_rows, columns=["Index"] + list(dataframe.columns))
+
+    # Establecer la columna 'Index' como índice
+    expanded_df.set_index("Index", inplace=True)
+
+    return expanded_df
 
 def datetime2matlabdn(dt):
     mdn = dt + timedelta(days = 366)

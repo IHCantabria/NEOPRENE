@@ -33,8 +33,8 @@ class Simulation(object):
         
         Dataframe_xi_months = list_params[1]
         
-        Df_params=allmonths(Df_params)
-        
+        Df_params=allmonths(Df_params.T).T
+
         XX = Input_Attr.X
         YY = Input_Attr.Y
         
