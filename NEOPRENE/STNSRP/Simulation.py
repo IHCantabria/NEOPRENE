@@ -21,7 +21,7 @@ class Simulation(object):
     def __init__(self,hiperparams):
         self.hiperparams = hiperparams
         
-    def __call__(self, params_cal, Input_Series, Input_Attr):
+    def __call__(self, params_cal, Input_Attr):
    
         statististics_sim_df=pd.DataFrame(index=self.hiperparams.statistics_name,columns=self.hiperparams.Seasonality_str)
     
