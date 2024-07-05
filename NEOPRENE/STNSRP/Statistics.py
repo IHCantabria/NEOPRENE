@@ -45,61 +45,53 @@ def statistics_from_file(statistics_name, Seasonality_str, Seasonality, temporal
     return statistics_gauges, cross_corr_gauges
     
 def statistics_from_serie(statistics_name, Seasonality_str, Seasonality, temporal_resolution, time_series):
+    statistics_name_no_cross = [sn for sn in statistics_name if 'crosscorr' not in sn]
+    statistics_dataframe = pd.DataFrame(index=statistics_name_no_cross, columns=Seasonality_str)
+    Datos_ = pd.DataFrame(index=time_series.index, columns=['Rain'])
+    Datos_['Rain'] = pd.to_numeric(time_series.iloc[:, 0].values, errors='coerce')
     
-    statistics_name_no_cross = [sn for sn in statistics_name if not 'crosscorr' in sn]# delete cross corr from statistcis_name
-
-    statistics_dataframe=pd.DataFrame(index=statistics_name_no_cross,columns=Seasonality_str)
-    Datos_ = pd.DataFrame(index=time_series.index,columns = ['Rain'])
-    Datos_.loc[:,'Rain'] = time_series.iloc[:,0].values
-        
-    for pri, prii in enumerate(Seasonality):
-        Datos=Datos_.copy(); Datos[Datos['Rain']<0]=np.nan
+    for prii in Seasonality:
+        Datos = Datos_.copy()
+        Datos[Datos['Rain'] < 0] = np.nan
              
-        if len(Seasonality)==12:
-            ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
+        if len(Seasonality) == 12:
             pos_s = np.where(Datos_.index.month == prii)[0]
             pos_r = np.where(Datos_.values >= 0)[0]
             pos = np.intersect1d(pos_s, pos_r)
-            Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
-            Datos = pd.DataFrame (Datos_['Rain'].iloc[pos].values, index = Datos_time_period)
-            
+            Datos_time_period = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+            Datos = pd.DataFrame(Datos_['Rain'].iloc[pos].values, index=Datos_time_period)
         else:
-            ## We select only the dates (months) for which I am going to calculate the statistics to be adjusted later.
             pos = []
-            for i, ii in enumerate(prii):
+            for ii in prii:
                 pos_s = np.where(Datos_.index.month == ii)[0]
                 pos_r = np.where(Datos_.values >= 0)[0]
                 pos.append(np.intersect1d(pos_s, pos_r))
             pos = [item for sublist in pos for item in sublist]
-            Datos_time_period  = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
-            Datos = pd.DataFrame (Datos_['Rain'].iloc[pos].values, index = Datos_time_period)
+            Datos_time_period = pd.period_range('1800', periods=len(pos), freq=temporal_resolution)
+            Datos = pd.DataFrame(Datos_['Rain'].iloc[pos].values, index=Datos_time_period)
         
-        
-            ## We calculate the defined statistics to be adjusted and I enter them in a dataframe.
-        
-        statistics_values = calculate_statistics(Datos,statistics_name_no_cross, temporal_resolution)
-        statistics_dataframe.loc[:,str(prii)]=statistics_values
+        statistics_values = calculate_statistics(Datos, statistics_name_no_cross, temporal_resolution)
+        statistics_dataframe.loc[:, str(prii)] = statistics_values
     return statistics_dataframe
 
 def statistics_from_several_series(statistics_name, Seasonality_str, Seasonality, temporal_resolution, time_series):
     statistics_gauges={}
     for ID in time_series.columns:
         time_serie = pd.DataFrame(index = time_series.index)
-        time_serie['Rain'] = time_series[ID].values
+        time_serie['Rain'] = time_series[ID].values.astype(float)
         statistics_gauges[ID] = statistics_from_serie(statistics_name, Seasonality_str, Seasonality, temporal_resolution, time_serie)
 
     return statistics_gauges
 
 def cross_corr(statistics_name, Seasonality, temporal_resolution, time_series, Attributes, func, coordinates):
-    cross_corr_stationality={}
-    if np.sum(['cross' in i for i in statistics_name])>=1:
-        pos=np.where(['cross' in i for i in statistics_name]); pos=pos[0]
-        for i, ii in enumerate(pos):
-            cross_corr_s_aux, Distance_correlation =cross_corr_stationality_f(time_series, Seasonality, Attributes, func, coordinates, \
-                                                          statistics_name[pos[i]], temporal_resolution)
-
-            cross_corr_stationality[statistics_name[pos[i]]]=cross_corr_s_aux
-
+    cross_corr_stationality = {}
+    if any('cross' in i for i in statistics_name):
+        pos = [i for i, val in enumerate(statistics_name) if 'cross' in val]
+        for i in pos:
+            cross_corr_s_aux, Distance_correlation = cross_corr_stationality_f(
+                time_series, Seasonality, Attributes, func, coordinates, statistics_name[i], temporal_resolution
+            )
+            cross_corr_stationality[statistics_name[i]] = cross_corr_s_aux
     return cross_corr_stationality, Distance_correlation
 
 def change_statistics_dic_order(statististics_dataframe, Seasonality):

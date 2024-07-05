@@ -7,6 +7,6 @@ dist/*
 *egg-info*
 notebooks/CAL*
 notebooks/SIM*
-notebooks/auxiliary-materials/SN/*
 notebooks/Figures.ipynb
 notebooks/POINT_SPATIAL_DAILY/SIM1/*
+notebooks/auxiliary-materials/SPD/dem_*

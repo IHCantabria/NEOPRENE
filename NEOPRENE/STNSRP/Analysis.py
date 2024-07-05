@@ -9,25 +9,156 @@ Library containing classes for calibrating model parameters.
 '''
 
 from NEOPRENE.STNSRP.utils import *
+import os
 
+class read_CAL(object):
+    def __init__(self, data):
+        # statistics_Fit
+        self.statististics_Fit     = pd.read_csv(f'{data}statististics_fit.csv',index_col=0)
+        
+        # statististics_Real
+        file_names = [file for file in os.listdir(data) if file.startswith('statististics_real') and file.endswith('.csv')]
+        self.statististics_Real = {}
+        for file in file_names:
+            termination_str = file.split('_')[-1].split('.')[0]  
+            termination_tuple = tuple(map(int, termination_str.strip('()').split(', ')))
+            file_path = os.path.join(data, file)
+            self.statististics_Real[termination_tuple] = pd.read_csv(file_path,index_col=0)
+        
+        # crosscorr_real
+        file_names = [file for file in os.listdir(data) if file.startswith('crosscorr') and 'real' in file and file.endswith('.csv')]
+
+        self.crosscorr_Real = {}
+
+        for file in file_names:
+            
+            file_type = file.split('_')[0] + '_' + file.split('_')[1]
+            
+            termination_str = file.split('_')[-1].split('.')[0] 
+            
+            termination_tuple = tuple(map(int, termination_str.strip('()').split(', ')))
+            file_path = os.path.join(data, file)
+            
+            df = pd.read_csv(file_path,index_col=0)
+            
+            if file_type not in  self.crosscorr_Real:
+                 self.crosscorr_Real[file_type] = {}
+            
+            self.crosscorr_Real[file_type][termination_tuple] = df
+
+        # crosscorr_Fit
+        file_names = [file for file in os.listdir(data) if file.startswith('crosscorr') and 'Fit' in file and 'dist' not in file and file.endswith('.csv')]
+
+        self.crosscorr_Fit = {}
+
+        for file in file_names:
+            
+            file_type = file.split('_')[0] + '_' + file.split('_')[1]
+            
+            termination_str = file.split('_')[-1].split('.')[0] 
+            
+            termination_tuple = tuple(map(int, termination_str.strip('()').split(', ')))
+            file_path = os.path.join(data, file)
+            
+            df = pd.read_csv(file_path,index_col=0)
+            
+            if file_type not in  self.crosscorr_Fit:
+                 self.crosscorr_Fit[file_type] = {}
+            
+            self.crosscorr_Fit[file_type][termination_tuple] = df
+
+        # crosscorr_Fit
+        file_names = [file for file in os.listdir(data) if file.startswith('crosscorr') and 'real_dist' in file and file.endswith('.csv')]
+
+        self.crosscorr_Real_Dist = {}
+
+        for file in file_names:
+            
+            
+            termination_str = file.split('_')[-1].split('.')[0] 
+            
+            termination_tuple = tuple(map(int, termination_str.strip('()').split(', ')))
+            file_path = os.path.join(data, file)
+
+            df = pd.read_csv(file_path,index_col=0)
+
+            self.crosscorr_Real_Dist[termination_tuple] = df
+
+
+class read_SIM(object):
+    def __init__(self, data, hiper_params_sim):
+
+        self.temporal_resolution     = hiper_params_sim.temporal_resolution
+        self.Seasonality     = hiper_params_sim.Seasonality
+
+        # statististics_simulated
+        file_names = [file for file in os.listdir(data) if file.startswith('statistic') and 'simulated' in file and file.endswith('.csv')]
+        self.statististics_Simulated = {}
+        for file in file_names:
+            termination_str = file.split('_')[-1].split('.')[0]  
+            termination_tuple = tuple(map(int, termination_str.strip('()').split(', ')))
+            file_path = os.path.join(data, file)
+            self.statististics_Simulated[termination_tuple] = pd.read_csv(file_path,index_col=0)
+
+        # crosscorr simulated
+        file_names = [file for file in os.listdir(data) if file.startswith('crosscorr') and 'simulated' in file and 'dist' not in file and file.endswith('.csv')]
+
+        self.crosscorr_Simulated = {}
+
+        for file in file_names:
+            
+            file_type = file.split('_')[0] + '_' + file.split('_')[1]
+            
+            termination_str = file.split('_')[-1].split('.')[0] 
+            
+            termination_tuple = tuple(map(int, termination_str.strip('()').split(', ')))
+            file_path = os.path.join(data, file)
+            
+            df = pd.read_csv(file_path,index_col=0)
+            
+            if file_type not in  self.crosscorr_Simulated:
+                 self.crosscorr_Simulated[file_type] = {}
+            
+            self.crosscorr_Simulated[file_type][termination_tuple] = df
+
+        # crosscorr dist simulated
+        file_names = [file for file in os.listdir(data) if file.startswith('crosscorr') and 'simulated_dist' in file and file.endswith('.csv')]
+
+        self.crosscorr_Simulated_dist = {}
+
+        for file in file_names:
+            
+            
+            termination_str = file.split('_')[-1].split('.')[0] 
+            
+            termination_tuple = tuple(map(int, termination_str.strip('()').split(', ')))
+            file_path = os.path.join(data, file)
+
+            df = pd.read_csv(file_path,index_col=0)
+
+            self.crosscorr_Simulated_dist[termination_tuple] = df
+
+        
+
+        # Daily_Simulation
+        self.Daily_Simulation = pd.read_csv(f'{data}Time_serie_daily_simulated.csv',index_col=0, parse_dates=True)
+        self.Hourly_Simulation = pd.read_csv(f'{data}Time_serie_hourly_simulated.csv',index_col=0, parse_dates=True)
 
 def compare_statistics(CAL, SIM, frecuency):
-
-    dataframe_statististics_obs = pd.DataFrame(index = CAL.statististics_Fit.index)
-    dataframe_statististics_fit = pd.DataFrame(index = CAL.statististics_Fit.index)
-    dataframe_statististics_sim = pd.DataFrame(index = CAL.statististics_Fit.index)
-
+    dataframe_statististics_obs = pd.DataFrame(index = CAL.statististics_Fit.index,columns=SIM.Seasonality)
+    dataframe_statististics_fit = pd.DataFrame(index = CAL.statististics_Fit.index,columns=SIM.Seasonality)
+    dataframe_statististics_sim = pd.DataFrame(index = CAL.statististics_Fit.index,columns=SIM.Seasonality)
     for season in CAL.statististics_Real:
         aux_season_obs = CAL.statististics_Real[season]
         aux_season_fit = CAL.statististics_Fit[str(season)]
         aux_season_sim = SIM.statististics_Simulated[season]
-        dataframe_statististics_obs[season] = aux_season_obs.mean(axis=1)
-        dataframe_statististics_fit[season] = aux_season_fit
-        dataframe_statististics_sim[season] = aux_season_sim.mean(axis=1)
+        dataframe_statististics_obs.loc[:,[season]] = aux_season_obs.mean(axis=1).values.reshape(-1,1)
+        dataframe_statististics_fit.loc[:,[season]] = aux_season_fit.values.reshape(-1,1)
+        dataframe_statististics_sim.loc[:,[season]] = aux_season_sim.mean(axis=1).values.reshape(-1,1)
         
-    stats_obs=allmonths(dataframe_statististics_obs)
-    stats_fit=allmonths(dataframe_statististics_fit)
-    stats_sim=allmonths(dataframe_statististics_sim)
+    stats_obs=allmonths(dataframe_statististics_obs.T).T
+    stats_fit=allmonths(dataframe_statististics_fit.T).T
+    stats_sim=allmonths(dataframe_statististics_sim.T).T
     
      
     N = len(stats_obs.index)
@@ -290,9 +421,17 @@ class Analysis(object):
     hiperparams : Object. 
         Object with calibration hyperparameters."""
     
-    def __init__(self,CAL,SIM):
-        self.CAL = CAL
-        self.SIM = SIM
+    def __init__(self,CAL,SIM,hiper_params_sim):
+        if type(CAL) == str:
+            self.CAL = read_CAL(CAL)
+        else:
+            self.CAL = CAL
+
+        if type(SIM) == str:
+            self.SIM = read_SIM(SIM,hiper_params_sim)
+        else:
+            self.SIM = SIM
+
         self.figures = []
         self.names_figures = []
         
