@@ -9,7 +9,7 @@ with open(this_directory / "README.md", encoding="utf-8") as f:
 setup(  name='NEOPRENE',
         packages = find_packages(),
         license = "GPLv3",
-        version='1.0.1',
+        version='1.1',
         description='🌎 Scripts and information to synthetic generation of precipitation based on Point Processes.',
         long_description=long_description,
         long_description_content_type='text/markdown',
@@ -21,7 +21,7 @@ setup(  name='NEOPRENE',
         include_package_data=True,
         #package_data={'': ['notebooks/*.ipynb']},
         #data_files=[("notebooks",["*"])],
-        python_requires='>=3.7, <4',
+        python_requires='>=3.10, <4',
         install_requires=[
             'numpy',
             'pandas',
@@ -34,5 +34,5 @@ setup(  name='NEOPRENE',
             'pyshp',
             'shapely',
         ],
-        extras_require={'plotting': ['matplotlib>=2.2.0', 'jupyter','jupyterlab']}
+        extras_require={'plotting': ['matplotlib>=3.8.0', 'jupyter','jupyterlab']}
         )
