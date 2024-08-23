@@ -21,7 +21,7 @@ setup(  name='NEOPRENE',
         include_package_data=True,
         #package_data={'': ['notebooks/*.ipynb']},
         #data_files=[("notebooks",["*"])],
-        python_requires='>=3.10, <4',
+        python_requires='>=3.9, <4',
         install_requires=[
             'numpy',
             'pandas',

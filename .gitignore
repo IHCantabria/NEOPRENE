@@ -11,3 +11,7 @@ notebooks/SIM*
 notebooks/Figures.ipynb
 notebooks/POINT_SPATIAL_DAILY/SIM1/*
 notebooks/auxiliary-materials/SPD/dem_*
+*nc
+*csv
+notebooks/auxiliary-materials/GPM/*
+*.csv
