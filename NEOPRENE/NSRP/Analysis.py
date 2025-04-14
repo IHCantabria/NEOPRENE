@@ -9,13 +9,20 @@ Library containing classes for calibrating model parameters.
 '''
 
 from NEOPRENE.NSRP.utils import *
+import pandas as pd
 
 def compare_statistics(CAL, SIM, frecuency):
     
     stats_obs=allmonths(CAL.statististics_Real)
     stats_fit=allmonths(CAL.statististics_Fit)
     stats_sim=allmonths(SIM.statististics_Simulated)
-    
+
+    # Se definen nuevos índices para stats_fit
+    nuevos_indices = ['mean', 'var_1', 'var_2', 'var_3', 'var_4', 'autocorr_1_1', 'autocorr_2_1', 'autocorr_3_1', 'fih_1', 'fiWW_1', 'fiDD_1', 'M3_1']
+
+    # Se añaden los nuevos índices a stats_fits
+    stats_fit.index = nuevos_indices
+
     N = len(stats_obs.index)
     RK = int(np.ceil(np.sqrt(len(stats_obs.index)))); 
     CK = int(math.ceil(N / RK))
@@ -45,8 +52,8 @@ def compare_statistics(CAL, SIM, frecuency):
         Data_sta=pd.DataFrame(index=np.arange(1, 13))
         Obs=list(); Fit=list(); Sim=list();
         for m in np.arange(1, 13):
-            Obs.append(stats_obs[m].loc[ii])
             Fit.append(stats_fit[m][ii])
+            Obs.append(stats_obs[m].loc[ii])
             Sim.append(stats_sim[m].loc[ii])
             
         Data_sta.index = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
